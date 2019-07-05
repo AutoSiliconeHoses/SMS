@@ -56,3 +56,15 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Security
+config.yml
+
+# Ignore stock files
+*.xml
+*.csv
+*.txt
+*.xlsx
+*.xls
+*.zip
+
