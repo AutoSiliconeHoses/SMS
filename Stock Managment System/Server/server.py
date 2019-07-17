@@ -1,4 +1,4 @@
-import importlib, socket, sys, time, string, os, yaml, threading, multiprocessing, queue, subprocess, py_compile
+import importlib, socket, sys, time, string, os, yaml, threading, multiprocessing, queue, subprocess, py_compile, pickle, collections
 import psutil
 from os.path import getmtime
 import Server.configedit as configedit
@@ -18,17 +18,40 @@ for s in config['suppliers']:
 			print("Could not import", s)
 
 # List of accepted commands
-comlist = ["RUN","CNFED","UPDATE","QUEUE", "WAIT"]
+comlist = ["RUN","CNFED","UPDATE"]
 
-# Files "watches" itself, used for UPDATE.
+# Files "watches" itself, used for UPDATE
 WATCHED = [__file__]
 WATCHED_FILES = [(f, getmtime(f)) for f in WATCHED]
 
 # Initiate queue d
-q = queue.Queue()
+q = collections.deque()
+
+# for row in open("import_queue.txt").readlines():
+# 	", ".join(str(row))
+# 	print(row)
+# 	q.put(row)
+
+# file = open('import_queue', 'rb')
+# data = pickle.load(file)
+# file.close()
+# q.put(data)
+#
+# comq = ""
+# for element in list(q.queue):
+# 	comq = comq + str(element)
+# print(comq)
+
 
 # Restarts program with UPDATE
-def restart_program():
+def restart_program(): # change
+	file = open('import_queue', 'wb')
+	while q:
+		command = q.popleft()
+		pickle.dump(command, file)
+	#	q.task_done() # change
+	file.close()
+
 	p = psutil.Process(os.getpid())
 	for handler in p.connections():
 		os.close(handler.fd)
@@ -38,18 +61,23 @@ def restart_program():
 
 # Checks commands
 def commandCheck(c, args):
-	if args[0] in comlist: # Accepted commands
-		q.put(args)	 # Add to queue
-		c.send(("You are #" + str(q.qsize()) + " in the queue").encode())
+	if args[0] in comlist: # Accepted commandserg
+		q.append(args)	 # Add to queue
+		c.send(("You are #" + str(len(q)) + " in the queue").encode())
+	elif args[0] == "QUEUE":
+		comq = ""
+		for element in q:
+			comq = comq + str(element) + "\n"
+		c.send(comq.encode())
 	else:   # Unknown command
 		print("Command not recognized")
 		c.send("Command not recognized".encode())
 
 def runJob():
 	while True:
-		if not q.empty():
-			job = q.get()
-			if job[0] == "RUN": # Runs the supplier scripts
+		if q:
+			job = q.popleft()
+			if job[0] == "RUN": # Runs  the supplier scripts
 				suppliers = job[1:len(job)] # Makes a list of suppliers to go through
 				processPool = multiprocessing.Pool() # Makes process pool
 				for s in suppliers:
@@ -59,39 +87,28 @@ def runJob():
 						print("Could not execute:", s)
 				processPool.close()
 				processPool.join()
-			elif job[0] == "WAIT": # wait as a psuedo command
-				print("wait detected")
-				time.sleep(30)
-				print("wait complete")
 			elif job[0] == "CNFED":	# Config edit
 				try:
 					configedit.update(job[1],job[2]) # cant give it c because it is made in main but not passed to runJob
-					print("Update succesful")
+					print("Congig.yml updated")
+					# When putting in a command it needs to be in format "CNFED ['suppliers'][*supplier*][*attribute*] *value*"
 				except:
-					print("update unsuccessful")
+					print("Error: Config Update Unsuccessful\nConfig Unaffected")
 			elif job[0] == "UPDATE": # Update server
-				# try:
 				for f, mtime in WATCHED_FILES:
 					if getmtime(f) != mtime:
 						print("Updating....")
 						try:
-							py_compile.compile("__servinit__.py", "__servinit__.pyc")
-							restart_program() # TODO: make it check if the server runs before restarting
+							py_compile.compile('Server/server.py', doraise=True)
+							print("Compilation Check Successful")
+							restart_program()
 						except py_compile.PyCompileError:
-							print("Error: Failed to restart server.")
+							print("Error: Update Unsuccessful")
+							#print("Error: Failed to restart server.")
 					else:
 						print("No changes made")
-			elif job[0] == "QUEUE":	# supposed to print Queue, but it cant do it straight away like this
-				print("queue detected") # because it is put in the queue meaning it will be executed after the
-				printq = q			  # things before it, and will only print the things after. also atm it
-				for j in range(0, q.qsize()): # unloads everything from queue meaning everything after will be taken off
-					printjobs = printq.get()
-					print("Current Jobs: ")
-					print(printjobs)
-					printq.task_done()
-			q.task_done()
+			#q.task_done()
 		time.sleep(5)
-
 
 def runRequests():
 	# Get socket ready for use

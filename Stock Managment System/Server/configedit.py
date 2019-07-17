@@ -6,7 +6,8 @@ with open("config.yml", 'r') as ymlfile:
 def update(attribute, value):
 	with open("config.yml", 'w+') as changefile:
 		editline = 'cfg' + attribute +" = " + str(value)
-		exec(editline)
+		try:
+			exec(editline)
+		except:
+			print("Error: cannot update config\nConfig.yml remains unaffected")
 		yaml.dump(cfg, changefile)
-
-#editConfig("['suppliers']['fps']['max']", 15)
