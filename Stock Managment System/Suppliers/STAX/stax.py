@@ -14,24 +14,30 @@ def download_file_from_server_endpoint(server_endpoint, local_file_path):
 				local_file.write(chunk)
 def stax():
 	print("running stax.py")
+
+
 	# Read config file
 	with open("config.yml", 'r') as cfg:
 		config = yaml.load(cfg, Loader=yaml.FullLoader)
 
+	MAX = config['suppliers']['fps']['max']
+	MIN = config['suppliers']['fps']['min']
+
 	download_file_from_server_endpoint(config['suppliers']['stax']['url'], "Suppliers/STAX/stax.csv")
 
 	# TODO: Remove first and third line from CSV then create file
-	with open('Suppliers/STAX/stax.csv', 'r') as fin:
-		data = fin.read().splitlines(True)
-	with open('Suppliers/STAX/stax.csv', 'w') as fout:
-		fout.writelines(data[1:])
 	with open('Suppliers/STAX/stax.csv') as csvfile:
-		reader = csv.DictReader(csvfile)
+		full = csvfile.read().splitlines(True)
+		reader = csv.DictReader(full[1:])
 		next(reader, None)
 		data = ""
 		for row in reader:
+			if int(row['Quantity']) > MAX:
+				row['Quantity'] = str(MAX)
+			elif int(row['Quantity']) < MIN:
+				row['Quantity'] = "0"
 			data += (row['Item']+"-SX")+"\t"+row['Quantity']+"\n"
-	
+
 	with open('Suppliers/STAX/stax.txt', 'w') as txtfile:
 		txtfile.write(data)
 		txtfile.close()
