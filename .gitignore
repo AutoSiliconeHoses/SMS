@@ -59,6 +59,7 @@ target/
 
 # Security
 config.yml
+Stock Managment System/import_queue
 
 # Ignore stock files
 *.xml
@@ -67,4 +68,6 @@ config.yml
 *.xlsx
 *.xls
 *.zip
+
+
 
