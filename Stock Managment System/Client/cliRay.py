@@ -1,5 +1,5 @@
 import sys, string, os, yaml
-import Client.client as client
+import client
 
 with open("config.yml", 'r') as cfg:
 	config = yaml.load(cfg, Loader=yaml.FullLoader)
