@@ -18,16 +18,21 @@ def stax():
 	with open("config.yml", 'r') as cfg:
 		config = yaml.load(cfg, Loader=yaml.FullLoader)
 
-	#download_file_from_server_endpoint(config['suppliers']['stax']['url'], "Suppliers/STAX/stax.csv")
-
+	download_file_from_server_endpoint(config['suppliers']['stax']['url'], "Suppliers/STAX/stax.csv")
 
 	# TODO: Remove first and third line from CSV then create file
-	first = True
+	with open('Suppliers/STAX/stax.csv', 'r') as fin:
+		data = fin.read().splitlines(True)
+	with open('Suppliers/STAX/stax.csv', 'w') as fout:
+		fout.writelines(data[1:])
 	with open('Suppliers/STAX/stax.csv') as csvfile:
 		reader = csv.DictReader(csvfile)
 		next(reader, None)
+		data = ""
 		for row in reader:
-			print(row['Item'])
+			data += (row['Item']+"-SX")+"\t"+row['Quantity']+"\n"
+	
+	with open('Suppliers/STAX/stax.txt', 'w') as txtfile:
+		txtfile.write(data)
+		txtfile.close()
 	print("finished stax.py")
-
-stax()
