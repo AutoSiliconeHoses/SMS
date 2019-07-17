@@ -71,3 +71,9 @@ Stock Managment System/import_queue
 
 
 
+
+Stock Managment System/Suppliers/Emails/
+
+*.xlsx#
+
+*.csv#
