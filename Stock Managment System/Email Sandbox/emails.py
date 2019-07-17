@@ -40,8 +40,6 @@ class FetchEmail():
 				continue
 
 			filename = part.get_filename()
-			if re.match(r'*(.png)',filename):
-				continue
 			print("Downloading:", filename)
 			att_path = os.path.join(self.folder, filename)
 
@@ -62,8 +60,11 @@ class FetchEmail():
 					print("No new emails to read.")
 					self.close_connection()
 					exit()
-
-				msg = email.message_from_string(data[0][1].decode())
+				try:
+					msg = email.message_from_string(data[0][1].decode())
+				except:
+					msg = None
+					print("CAN'T DECODE")
 				if isinstance(msg, str) == False:
 					emails.append(msg)
 				response, data = self.connection.store(message, '+FLAGS','\\Seen')
