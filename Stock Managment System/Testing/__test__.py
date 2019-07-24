@@ -19,5 +19,5 @@ def serverTest(ipaddr, test):
 
 	s.close()
 for row in tests.readlines():
-	serverTest("192.168.1.99", str(row)) # Ray: 99 Dan: 110 Server: 13
+	serverTest("192.168.1.99", str(row).strip()) # Ray: 99 Dan: 110 Server: 131
 print("Started tests. Check the server for completion.")
