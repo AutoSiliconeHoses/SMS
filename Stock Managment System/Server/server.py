@@ -27,33 +27,25 @@ WATCHED_FILES = [(f, getmtime(f)) for f in WATCHED]
 # Initiate queue d
 q = collections.deque()
 
-# for row in open("import_queue.txt").readlines():
-# 	", ".join(str(row))
-# 	print(row)
-# 	q.put(row)
-
-# file = open('import_queue', 'rb')
-# data = pickle.load(file)
-# file.close()
-# q.put(data)
-#
-# comq = ""
-# for element in list(q.queue):
-# 	comq = comq + str(element)
-# print(comq)
-
+try: # tries to find a previously loaded queue. Used for update
+	file = open('import_queue', 'rb')
+	data = pickle.load(file)
+	file.close()
+	for item in data:
+		q.append(item)
+	os.remove('import_queue')
+except:
+	None
 
 # Restarts program with UPDATE
-def restart_program(): # change
-	file = open('import_queue', 'wb')
-	while q:
-		command = q.popleft()
-		pickle.dump(command, file)
-	#	q.task_done() # change
-	file.close()
+def restart_program():
+	if q: # check if queue is empty, if false create file and load it with all commands following update
+		file = open('import_queue', 'wb')
+		pickle.dump(q, file)
+		file.close()
 
 	p = psutil.Process(os.getpid())
-	for handler in p.connections():
+	for handler in p.connections(): # easter
 		os.close(handler.fd)
 
 	python = sys.executable
@@ -61,10 +53,10 @@ def restart_program(): # change
 
 # Checks commands
 def commandCheck(c, args):
-	if args[0] in comlist: # Accepted commandserg
+	if args[0] in comlist: # Accepted commands
 		q.append(args)	 # Add to queue
 		c.send(("You are #" + str(len(q)) + " in the queue").encode())
-	elif args[0] == "QUEUE":
+	elif args[0] == "QUEUE": # give client everything in queue
 		comq = ""
 		for element in q:
 			comq = comq + str(element) + "\n"
@@ -80,20 +72,20 @@ def runJob():
 			if job[0] == "RUN": # Runs  the supplier scripts
 				suppliers = job[1:len(job)] # Makes a list of suppliers to go through
 				processPool = multiprocessing.Pool() # Makes process pool
+				supplierslist = []
 				for s in suppliers:
-					try:
-						processPool.apply_async(eval(s)) # Creates pool in processPool for each supplier
-					except:
-						print("Could not execute:", s)
+					if s not in supplierslist:
+						supplierslist.append(s)
+						try:
+							processPool.apply_async(eval(s)) # Creates pool in processPool for each supplier
+						except:
+							print("Could not execute:", s)
+					else:
+						print("Error: " + s + " will only run once per request")
 				processPool.close()
 				processPool.join()
 			elif job[0] == "CNFED":	# Config edit
-				try:
-					configedit.update(job[1],job[2]) # cant give it c because it is made in main but not passed to runJob
-					print("Congig.yml updated")
-					# When putting in a command it needs to be in format "CNFED ['suppliers'][*supplier*][*attribute*] *value*"
-				except:
-					print("Error: Config Update Unsuccessful\nConfig Unaffected")
+				configedit.update(job[1],job[2]) 
 			elif job[0] == "UPDATE": # Update server
 				for f, mtime in WATCHED_FILES:
 					if getmtime(f) != mtime:
@@ -104,7 +96,6 @@ def runJob():
 							restart_program()
 						except py_compile.PyCompileError:
 							print("Error: Update Unsuccessful")
-							#print("Error: Failed to restart server.")
 					else:
 						print("No changes made")
 			#q.task_done()

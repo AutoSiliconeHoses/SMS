@@ -8,6 +8,7 @@ def update(attribute, value):
         editline = 'cfg' + attribute +" = " + str(value)
         try:
             exec(editline)
+            print("config.yml Successfully Updated")
         except:
             print("Error: cannot update config\nConfig.yml remains unaffected") # @todo fix multiple try prints from here and server
         yaml.dump(cfg, changefile)
