@@ -65,6 +65,7 @@ Stock Managment System/import_queue
 *.xml
 *.csv
 *.txt
+*.tsv
 *.xlsx
 *.xls
 *.zip
@@ -77,3 +78,5 @@ Stock Managment System/Suppliers/Emails/
 *.xlsx#
 
 *.csv#
+
+\.idea/
