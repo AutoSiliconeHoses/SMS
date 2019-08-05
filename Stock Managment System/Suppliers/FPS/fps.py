@@ -21,29 +21,29 @@ def fps():
 	start_time = time.time()
 	print("running fps.py")
 	try:
-		os.remove("Suppliers/FPS/fps_sheffield.txt")
+		os.remove("Suppliers/FPS/fps_sheffield.tsv")
 	except:
 		None
 	fps_sheffield.fps_sheffield()
 
 	try:
-		os.remove("Suppliers/FPS/fps_leeds.txt")
+		os.remove("Suppliers/FPS/fps_leeds.tsv")
 	except:
 		None
 	fps_leeds.fps_leeds()
 	try:
-		os.remove("Suppliers/FPS/fps.txt")
+		os.remove("Suppliers/FPS/fps.tsv")
 	except:
 		None
 
 	leeds = []
-	with open("Suppliers/FPS/fps_leeds.txt") as l:
+	with open("Suppliers/FPS/fps_leeds.tsv") as l:
 		leedsFile = l.readlines()
 		for line in leedsFile:
 			leeds.append(re.split('\t',line.strip()))
 
 	sheffield = []
-	with open("Suppliers/FPS/fps_sheffield.txt") as s:
+	with open("Suppliers/FPS/fps_sheffield.tsv") as s:
 		sheffieldFile = s.readlines()
 		for line in sheffieldFile:
 			sheffield.append(re.split('\t',line.strip()))
@@ -72,7 +72,7 @@ def fps():
 		if not found:
 			fullfps += sLine[0] + "\t" + sLine[1] + "\n"
 
-	with open('Suppliers/FPS/fps.txt', 'w') as txtfile:
+	with open('Suppliers/FPS/fps.tsv', 'w') as txtfile:
 		txtfile.write(fullfps)
 		txtfile.close()
 

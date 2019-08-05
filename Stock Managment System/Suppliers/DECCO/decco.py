@@ -12,6 +12,6 @@ def decco():
     for i in range(0, len(vallist)):
         temptext = temptext + vallist[i][0] + "\t" + str(vallist[i][1]) + "\n"
 
-    text = open("Suppliers/DECCO/decco.txt", "w")
+    text = open("Suppliers/DECCO/decco.tsv", "w")
     text.write(temptext)
     text.close()

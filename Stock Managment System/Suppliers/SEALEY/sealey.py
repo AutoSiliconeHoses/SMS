@@ -1,5 +1,5 @@
 import openpyxl, os, sys, yaml
-import Server.supplier_ftp as supplier_ftp
+import Server.Receive.supplier_ftp as supplier_ftp
 
 #Download file from FTP
 def sealey():
@@ -20,7 +20,7 @@ def sealey():
     for i in range(0, len(vallist)):
         temptext += vallist[i][0] + "\t" + str(vallist[i][1]) + "\n"
 
-    with open("Suppliers/SEALEY/sealey.txt", "w") as text:
+    with open("Suppliers/SEALEY/sealey.tsv", "w") as text:
         text.write(temptext)
         text.close()
     print("finished sealey.py")

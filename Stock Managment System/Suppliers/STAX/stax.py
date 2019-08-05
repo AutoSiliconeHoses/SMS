@@ -37,7 +37,7 @@ def stax():
                 row['Quantity'] = "0"
             data += (row['Item']+"-SX")+"\t"+row['Quantity']+"\n"
 
-    with open('Suppliers/STAX/stax.txt', 'w') as txtfile:
+    with open('Suppliers/STAX/stax.tsv', 'w') as txtfile:
         txtfile.write(data)
         txtfile.close()
     print("finished stax.py")

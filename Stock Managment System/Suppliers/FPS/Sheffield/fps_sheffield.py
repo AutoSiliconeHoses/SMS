@@ -1,4 +1,4 @@
-import openpyxl, os, glob, yaml, sys
+import openpyxl, os, glob, yaml, sys, csv
 
 def fps_sheffield():
     with open("config.yml", 'r') as cfg:
@@ -8,27 +8,23 @@ def fps_sheffield():
     MIN = config['suppliers']['fps']['min']
     temptext = ""
 
-    for file in glob.glob('Suppliers/FPS/Sheffield/FPS_STOCK_*.xlsx'):
-        doc = openpyxl.load_workbook(file)
-        sheet = doc.active
+    if os.path.isfile('Server/Receive/Emails/FPS_STOCK.csv'):
 
-        for x in range(1, sheet.max_column+1):
-            if sheet.cell(row = 1, column = x).value == "Product Code":
-                productcode = x
-            if sheet.cell(row = 1, column = x).value == "MFG Code":
-                mfgcode = x
-            if sheet.cell(row = 1, column = x).value == "Free Stock Available Flag":
-                freestk = x
+        with open('Suppliers/Emails/FPS_STOCK.csv') as csvfile:
+            full = csvfile.read().splitlines(True)
+            reader = csv.DictReader(full)
+            next(reader, None)
+            data = ""
+            for row in reader:
+                if int(row['Free Stock Available Flag']) == MAX:
+                    row['Free Stock Available Flag'] = str(MAX)
+                elif int(row['Free Stock Available Flag']) <= MIN:
+                    row['Free Stock Available Flag'] = "0"
+                data += (row['Product Code'] + "-" + row['MFG Code'] + "-FPS")+"\t"+row['Free Stock Available Flag']+"\n"
 
-        for row in range(2, sheet.max_row + 1):
-            suppcode = sheet.cell(row = row, column = productcode).value + "-" + sheet.cell(row = row, column = mfgcode).value[0:3] + "-FPS"
-            if sheet.cell(row = row, column = freestk).value == "8":
-                stk = MAX
-            else:
-                stk = MIN
-            temptext += suppcode + "\t" + str(stk) + "\n"
-
-    with open("Suppliers/FPS/fps_sheffield.txt", "w") as text:
-        text.write(temptext)
-        text.close()
+        with open("Suppliers/FPS/fps_sheffield.tsv", "w") as text:
+            text.write(data)
+            text.close()
+    else:
+        print("Error: FPS_STOCK file not found")
 #fps_sheffield()

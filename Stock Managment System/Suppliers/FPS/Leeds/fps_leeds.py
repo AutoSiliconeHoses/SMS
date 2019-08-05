@@ -7,28 +7,32 @@ def fps_leeds():
     MAX = config['suppliers']['fps']['max']
 
     temptext = ""
-    for file in glob.glob('Suppliers/FPS/Leeds/LEEDS STOCK *.xlsx'):
-        doc = openpyxl.load_workbook(file)
-        sheet = doc.active
 
-        for x in range(1, sheet.max_column+1):
-            if sheet.cell(row = 1, column = x).value == "Supplier":
-                supplier = x
-            if sheet.cell(row = 1, column = x).value == "Part No":
-                partno = x
-            if sheet.cell(row = 1, column = x).value == "Free Stk":
-                freestk = x
+    if os.path.isfile('Server/Receive/Emails/FPS_LEEDS.xlsx'):
+        for file in glob.glob('Suppliers/Emails/FPS_LEEDS.xlsx'):
+            doc = openpyxl.load_workbook(file)
+            sheet = doc.active
 
-        for row in range(2, sheet.max_row + 1):
-            suppcode = sheet.cell(row = row, column = partno).value + "-" + sheet.cell(row = row, column = supplier).value[0:3] + "-FPS"
-            if sheet.cell(row = row, column = freestk).value == "YES":
-                stk = MAX
-            elif sheet.cell(row = row, column = freestk).value == "NO":
-                stk = "0"
-            temptext += suppcode + "\t" + str(stk) + "\n"
+            for x in range(1, sheet.max_column+1):
+                if sheet.cell(row = 1, column = x).value == "Supplier":
+                    supplier = x
+                if sheet.cell(row = 1, column = x).value == "Part No":
+                    partno = x
+                if sheet.cell(row = 1, column = x).value == "Free Stk":
+                    freestk = x
 
-    with open("Suppliers/FPS/fps_leeds.txt", "w") as text:
-        text.write(temptext)
-        text.close()
+            for row in range(2, sheet.max_row + 1):
+                suppcode = sheet.cell(row = row, column = partno).value + "-" + sheet.cell(row = row, column = supplier).value[0:3] + "-FPS"
+                if sheet.cell(row = row, column = freestk).value == "YES":
+                    stk = MAX
+                elif sheet.cell(row = row, column = freestk).value == "NO":
+                    stk = "0"
+                temptext += suppcode + "\t" + str(stk) + "\n"
+
+        with open("Suppliers/FPS/fps_leeds.tsv", "w") as text:
+            text.write(temptext)
+            text.close()
+    else:
+        print("Error: FPS_LEEDS file not found")
 
 #fps_leeds()
