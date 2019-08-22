@@ -3,6 +3,7 @@ import time
 import schedule
 import sys
 import yaml
+import socket
 
 sys.path.append(".")
 from Client import client as client
@@ -21,8 +22,11 @@ def runSchedule():
                     if config['suppliers'][s]['times'] is not None:
                         for times in config['suppliers'][s]['times'].split(","):
                             print("\t", day, " @", times)
-                            exec("schedule.every()."+day+".at('"+times+"').do(client.runClient, args='RUN "+s+"')")
+                            schedStr = "schedule.every()."+day+".at('"+times+"').do(client.runClient, ipaddr='"+socket.gethostbyname(socket.gethostname())+"', args='RUN "+s+"')"
+                            # print(schedStr)
+                            exec(schedStr)
 
+    # print(schedule.jobs)
     while True:
         schedule.run_pending()
         time.sleep(1)

@@ -1,4 +1,4 @@
-import socket, collections, time
+import socket, collections, time, datetime
 
 # List of accepted commands
 comlist = ["RUN", "CNFED", "UPDATE"]
@@ -30,7 +30,7 @@ def runRequests(q):
     while True:
         # Connect with incoming client
         c, addr = s.accept()
-        print('Connection established with: ', addr)
+        print('Connection established with:', addr, '@', datetime.datetime.now())
 
         # Receive command from client and split
         receive = c.recv(1024).decode()
