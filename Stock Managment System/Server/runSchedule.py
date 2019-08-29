@@ -20,7 +20,7 @@ def runSchedule():
             for day in config['suppliers'][s]['days']:
                 if config['suppliers'][s]['days'][day] is True:
                     if config['suppliers'][s]['times'] is not None:
-                        for times in config['suppliers'][s]['times'].split(","):
+                        for times in config['suppliers'][s]['times']:
                             print("\t", day, " @", times)
                             schedStr = "schedule.every()."+day+".at('"+times+"').do(client.runClient, ipaddr='"+socket.gethostbyname(socket.gethostname())+"', args='RUN "+s+"')"
                             # print(schedStr)

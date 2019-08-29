@@ -23,4 +23,9 @@ def sealey():
     with open("Suppliers/SEALEY/sealey.tsv", "w") as text:
         text.write(temptext)
         text.close()
+
+    with open("Server/Send/Ebay/StockFiles/sealey.tsv", "w") as text:
+        text.write(temptext)
+        text.close()
+
     print("finished sealey.py")
