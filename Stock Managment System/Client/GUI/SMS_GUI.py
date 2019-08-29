@@ -1,5 +1,5 @@
-import sys, time, string, os, yaml
-import socket
+import sys, time, string, os, yaml, datetime, socket
+from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 sys.path.append("Client")
@@ -106,11 +106,11 @@ class Ui_MainWindow(object):
             self.tabWidget.currentChanged['int'].connect(self.setSupplier)
 
             self.lbl_s = QtWidgets.QLabel(self.tab)
-            self.lbl_s.setGeometry(QtCore.QRect(10, 10, 161, 21))
+            self.lbl_s.setGeometry(QtCore.QRect(10, 10, 161, 25))
             font = QtGui.QFont()
             font.setPointSize(16)
             self.lbl_s.setFont(font)
-            self.lbl_s.setObjectName("lbl_supplier")
+            self.lbl_s.setObjectName("lbl_s")
 
             self.lbl_supplier = QtWidgets.QLabel(self.tab)
             self.lbl_supplier.setGeometry(QtCore.QRect(120, 10, 161, 21))
@@ -118,10 +118,6 @@ class Ui_MainWindow(object):
             font.setPointSize(16)
             self.lbl_supplier.setFont(font)
             self.lbl_supplier.setObjectName("lbl_supplier")
-
-            self.time_schedule = QtWidgets.QTimeEdit(self.tab)
-            self.time_schedule.setGeometry(QtCore.QRect(350, 50, 161, 26))
-            self.time_schedule.setObjectName("time_schedule")
 
             self.lbl_max = QtWidgets.QLabel(self.tab)
             self.lbl_max.setGeometry(QtCore.QRect(10, 110, 31, 21))
@@ -150,11 +146,11 @@ class Ui_MainWindow(object):
             self.lbl_type = QtWidgets.QLabel(self.tab)
             self.lbl_type.setGeometry(QtCore.QRect(200, 50, 67, 21))
             self.lbl_type.setObjectName("lbl_type")
-            self.lbl_type.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+            self.lbl_type.setAlignment(QtCore.Qt.AlignRight)
 
-            self.btn_submit = QtWidgets.QPushButton(self.tab)
-            self.btn_submit.setGeometry(QtCore.QRect(430, 230, 80, 25))
-            self.btn_submit.setObjectName("btn_submit")
+            self.btn_save = QtWidgets.QPushButton(self.tab)
+            self.btn_save.setGeometry(QtCore.QRect(90, 280, 101, 41))
+            self.btn_save.setObjectName("btn_save")
 
             self.lbl_enabled = QtWidgets.QLabel(self.tab)
             self.lbl_enabled.setGeometry(QtCore.QRect(10, 80, 67, 21))
@@ -165,15 +161,124 @@ class Ui_MainWindow(object):
             self.chk_supplier_enabled.setObjectName("chk_supplier_enabled")
             self.chk_supplier_enabled.setChecked(config['suppliers'][suppliers]['enabled'])
             self.enabled = config['suppliers'][suppliers]['enabled']
-            self.chk_supplier_enabled.stateChanged.connect(self.clickBox)
+            self.chk_supplier_enabled.stateChanged.connect(self.supplierEnabled)
 
-            self.lbl_time = QtWidgets.QLabel(self.tab)
-            self.lbl_time.setGeometry(QtCore.QRect(290, 50, 51, 21))
-            self.lbl_time.setObjectName("lbl_time")
+            self.lbl_rundays = QtWidgets.QLabel(self.tab)
+            self.lbl_rundays.setGeometry(QtCore.QRect(330, 30, 151, 21))
+            self.lbl_rundays.setObjectName("lbl_rundays")
 
-            self.time_repeat = QtWidgets.QTimeEdit(self.tab)
-            self.time_repeat.setGeometry(QtCore.QRect(350, 80, 161, 25))
-            self.time_repeat.setObjectName("time_repeat")
+            self.lbl_mon = QtWidgets.QLabel(self.tab)
+            self.lbl_mon.setGeometry(QtCore.QRect(330, 80, 81, 21))
+            self.lbl_mon.setObjectName("lbl_mon")
+            self.lbl_fri = QtWidgets.QLabel(self.tab)
+            self.lbl_fri.setGeometry(QtCore.QRect(330, 200, 81, 21))
+            self.lbl_fri.setObjectName("lbl_fri")
+            self.lbl_thu = QtWidgets.QLabel(self.tab)
+            self.lbl_thu.setGeometry(QtCore.QRect(330, 170, 81, 21))
+            self.lbl_thu.setObjectName("lbl_thu")
+            self.lbl_wed = QtWidgets.QLabel(self.tab)
+            self.lbl_wed.setGeometry(QtCore.QRect(330, 140, 81, 21))
+            self.lbl_wed.setObjectName("lbl_wed")
+            self.lbl_tue = QtWidgets.QLabel(self.tab)
+            self.lbl_tue.setGeometry(QtCore.QRect(330, 110, 81, 21))
+            self.lbl_tue.setObjectName("lbl_tue")
+            self.lbl_sun = QtWidgets.QLabel(self.tab)
+            self.lbl_sun.setGeometry(QtCore.QRect(330, 260, 81, 21))
+            self.lbl_sun.setObjectName("lbl_sun")
+            self.lbl_sat = QtWidgets.QLabel(self.tab)
+            self.lbl_sat.setGeometry(QtCore.QRect(330, 230, 81, 21))
+            self.lbl_sat.setObjectName("lbl_sat")
+
+            self.chk_mon = QtWidgets.QCheckBox(self.tab)
+            self.chk_mon.setGeometry(QtCore.QRect(440, 80, 16, 21))
+            self.chk_mon.setObjectName("chk_mon")
+            self.chk_mon.setChecked(config['suppliers'][suppliers]['days']['monday'])
+            self.monday = config['suppliers'][suppliers]['days']['monday']
+            self.chk_mon.stateChanged.connect(self.mondayEnabled)
+
+            self.chk_tue = QtWidgets.QCheckBox(self.tab)
+            self.chk_tue.setGeometry(QtCore.QRect(440, 110, 16, 21))
+            self.chk_tue.setObjectName("chk_tue")
+            self.chk_tue.setChecked(config['suppliers'][suppliers]['days']['tuesday'])
+            self.tuesday = config['suppliers'][suppliers]['days']['tuesday']
+            self.chk_tue.stateChanged.connect(self.tuesdayEnabled)
+
+            self.chk_wed = QtWidgets.QCheckBox(self.tab)
+            self.chk_wed.setGeometry(QtCore.QRect(440, 140, 16, 21))
+            self.chk_wed.setObjectName("chk_wed")
+            self.chk_wed.setChecked(config['suppliers'][suppliers]['days']['wednesday'])
+            self.wednesday = config['suppliers'][suppliers]['days']['wednesday']
+            self.chk_wed.stateChanged.connect(self.wednesdayEnabled)
+
+            self.chk_thu = QtWidgets.QCheckBox(self.tab)
+            self.chk_thu.setGeometry(QtCore.QRect(440, 170, 16, 21))
+            self.chk_thu.setObjectName("chk_thu")
+            self.chk_thu.setChecked(config['suppliers'][suppliers]['days']['thursday'])
+            self.thursday = config['suppliers'][suppliers]['days']['thursday']
+            self.chk_thu.stateChanged.connect(self.thursdayEnabled)
+
+            self.chk_fri = QtWidgets.QCheckBox(self.tab)
+            self.chk_fri.setGeometry(QtCore.QRect(440, 200, 16, 21))
+            self.chk_fri.setObjectName("chk_fri")
+            self.chk_fri.setChecked(config['suppliers'][suppliers]['days']['friday'])
+            self.friday = config['suppliers'][suppliers]['days']['friday']
+            self.chk_fri.stateChanged.connect(self.fridayEnabled)
+
+            self.chk_sat = QtWidgets.QCheckBox(self.tab)
+            self.chk_sat.setGeometry(QtCore.QRect(440, 230, 16, 21))
+            self.chk_sat.setObjectName("chk_sat")
+            self.chk_sat.setChecked(config['suppliers'][suppliers]['days']['saturday'])
+            self.saturday = config['suppliers'][suppliers]['days']['saturday']
+            self.chk_sat.stateChanged.connect(self.saturdayEnabled)
+
+            self.chk_sun = QtWidgets.QCheckBox(self.tab)
+            self.chk_sun.setGeometry(QtCore.QRect(440, 260, 16, 21))
+            self.chk_sun.setObjectName("chk_sun")
+            self.chk_sun.setChecked(config['suppliers'][suppliers]['days']['sunday'])
+            self.sunday = config['suppliers'][suppliers]['days']['sunday']
+            self.chk_sun.stateChanged.connect(self.sundayEnabled)
+
+
+
+
+
+
+            self.lbl_runtimes = QtWidgets.QLabel(self.tab)
+            self.lbl_runtimes.setGeometry(QtCore.QRect(520, 30, 151, 21))
+            self.lbl_runtimes.setObjectName("lbl_runtimes")
+
+            position = 80
+            for runtimes in range(0, len(config['suppliers'][suppliers]['times'])):
+
+                time1 = time.strptime(config['suppliers'][suppliers]['times'][runtimes], "%H:%M")
+
+                self.time_schedule1 = QtWidgets.QTimeEdit(self.tab)
+                self.time_schedule1.setGeometry(QtCore.QRect(520, position, 161, 26))
+                self.time_schedule1.setObjectName("time_schedule1")
+                self.time_schedule1.setTime(QtCore.QTime(time1[3], time1[4]))
+
+                if runtimes > 0:
+                    self.btn_remove_time1 = QtWidgets.QPushButton(self.tab)
+                    self.btn_remove_time1.setGeometry(QtCore.QRect(690, position, 26, 26))
+                    self.btn_remove_time1.setObjectName("btn_remove_time1")
+                    self.btn_remove_time1.setText(QtCore.QCoreApplication.translate("MainWindow", "-"))
+                    self.removeTime_ = partial(self.removeTime, runtimes, suppliers)
+                    self.btn_remove_time1.clicked.connect(self.removeTime_)
+
+
+                position += 30
+            self.times = config['suppliers'][suppliers]['times']
+            self.btn_add_time = QtWidgets.QPushButton(self.tab)
+            self.btn_add_time.setGeometry(QtCore.QRect(520, position, 26, 26))
+            self.btn_add_time.setObjectName("btn_add_time")
+
+
+
+
+
+
+
+
 
             if (config['suppliers'][suppliers]['type'] == 'ftp'):
                 self.lbl_user = QtWidgets.QLabel(self.tab)
@@ -207,6 +312,7 @@ class Ui_MainWindow(object):
 
             elif(config['suppliers'][suppliers]['type'] == 'email'):
                 None
+
             elif(config['suppliers'][suppliers]['type'] == 'http'):
                 self.lbl_http = QtWidgets.QLabel(self.tab)
                 self.lbl_http.setGeometry(QtCore.QRect(10, 170, 75, 21))
@@ -222,7 +328,7 @@ class Ui_MainWindow(object):
             MainWindow.setCentralWidget(self.centralwidget)
 
             self.retranslateUi(MainWindow, suppliers)
-            self.btn_submit.clicked.connect(self.editconfig)
+            self.btn_save.clicked.connect(self.editconfig)
             self.tabWidget.setCurrentIndex(0)
 
         self.btn_config.clicked.connect(self.tabWidget.show)
@@ -238,6 +344,14 @@ class Ui_MainWindow(object):
             self.enabled = config['suppliers'][self.supplier]['enabled']
             self.max = config['suppliers'][self.supplier]['max']
             self.min = config['suppliers'][self.supplier]['min']
+            self.monday = config['suppliers'][self.supplier]['days']['monday']
+            self.tuesday = config['suppliers'][self.supplier]['days']['tuesday']
+            self.wednesday = config['suppliers'][self.supplier]['days']['wednesday']
+            self.thursday = config['suppliers'][self.supplier]['days']['thursday']
+            self.friday = config['suppliers'][self.supplier]['days']['friday']
+            self.saturday = config['suppliers'][self.supplier]['days']['saturday']
+            self.sunday = config['suppliers'][self.supplier]['days']['sunday']
+            self.times = config['suppliers'][supplier]['times']
 
             if config['suppliers'][self.supplier]['type'] is "ftp":
                 self.user = config['suppliers'][self.supplier]['user']
@@ -245,18 +359,75 @@ class Ui_MainWindow(object):
                 self.file = config['suppliers'][self.supplier]['file']
             elif config['suppliers'][self.supplier]['type'] is "http":
                 self.url = config['suppliers'][self.supplier]['url']
+            elif config['suppliers'][self.supplier]['type'] is "email":
+                None
             # NOTE: Will need to reload values here-
             return self.supplier
         except:
             None
 
-    def clickBox(self, state):
+    def removeTime(self, n, supplier):
+        self.times = config['suppliers'][supplier]['times']
+        # print(self.times)
+        # print(self.times[n])
+        del self.times[n]
+        # print(self.times)
+
+    def supplierEnabled(self, state):
         self.enabled = config['suppliers'][self.supplier]['enabled']
         if state == QtCore.Qt.Checked:
             self.enabled = True
         else:
             self.enabled = False
-        #self.editconfig(self.supplier,"enabled", self.enabled)
+
+    def mondayEnabled(self, state):
+        self.monday = config['suppliers'][self.supplier]['days']['monday']
+        if state == QtCore.Qt.Checked:
+            self.monday = True
+        else:
+            self.monday = False
+
+    def tuesdayEnabled(self, state):
+        self.tuesday = config['suppliers'][self.supplier]['days']['tuesday']
+        if state == QtCore.Qt.Checked:
+            self.tuesday = True
+        else:
+            self.tuesday = False
+
+    def wednesdayEnabled(self, state):
+        self.wednesday = config['suppliers'][self.supplier]['days']['wednesday']
+        if state == QtCore.Qt.Checked:
+            self.wednesday = True
+        else:
+            self.wednesday = False
+
+    def thursdayEnabled(self, state):
+        self.thursday = config['suppliers'][self.supplier]['days']['thursday']
+        if state == QtCore.Qt.Checked:
+            self.thursday = True
+        else:
+            self.thursday = False
+
+    def fridayEnabled(self, state):
+        self.friday = config['suppliers'][self.supplier]['days']['friday']
+        if state == QtCore.Qt.Checked:
+            self.friday = True
+        else:
+            self.friday = False
+
+    def saturdayEnabled(self, state):
+        self.saturday = config['suppliers'][self.supplier]['days']['saturday']
+        if state == QtCore.Qt.Checked:
+            self.saturday = True
+        else:
+            self.saturday = False
+
+    def sundayEnabled(self, state):
+        self.sunday = config['suppliers'][self.supplier]['days']['sunday']
+        if state == QtCore.Qt.Checked:
+            self.sunday = True
+        else:
+            self.sunday = False
 
     def maxSpin(self, number):
         self.max = number
@@ -264,25 +435,45 @@ class Ui_MainWindow(object):
     def minSpin(self, number):
         self.min = number
 
-    def timeRepeat():
-        None # tbc
-
     def timeSchedule():
         None # tbc
 
     def editconfig(self, supplier):
-        updateType = ['enabled', 'max', 'min', 'user', 'passwd', 'file', 'url']
+        updateType = ['enabled', 'max', 'min', 'user', 'passwd', 'file', 'url', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'times']
         with open("config.yml", 'r') as cfg: # open config to populate certain areas of the GUI
             config = yaml.load(cfg, Loader=yaml.FullLoader)
             cfg.close()
+
         for value in updateType:
-            try:
-                selfval = eval("self." + value)
-                if config['suppliers'][self.supplier][value] is not selfval:
-                    updateStr = "CNFED ['suppliers']['"+self.supplier+"']['"+value+"'] "+str(selfval)
-                    client.runClient(ipaddr="192.168.1.99", args=updateStr)
-            except:
-               None
+            print(value)
+            if value is 'monday' or 'tuesday' or 'wednesday' or 'thursday' or 'friday' or 'saturday' or 'sunday':
+                print("days detec")
+                try:
+                    selfval = eval("self." + value)
+                    if config['suppliers'][self.supplier]['days'][value] is not selfval:
+                        updateStr = "CNFED ['suppliers']['"+self.supplier+"']['days']['"+value+"'] "+str(selfval)
+                        client.runClient(ipaddr="192.168.1.99", args=updateStr)
+                except:
+                   None
+            elif value is 'times':
+                # try:
+                print('times detec')
+                print(self.times)
+                print(config['suppliers'][self.supplier]['times'])
+                if str(config['suppliers'][self.supplier]['times']) is not str(self.times):
+                    for time in range(0, len(self.times)):
+                        updateStr = "CNFED ['suppliers']['"+self.supplier+"']['times']["+str(time)+"] "+str(self.times[time])
+                        client.runClient(ipaddr="192.168.1.99", args=updateStr)
+                # except:
+                #     None
+            else:
+                try:
+                    selfval = eval("self." + value)
+                    if config['suppliers'][self.supplier][value] is not selfval:
+                        updateStr = "CNFED ['suppliers']['"+self.supplier+"']['"+value+"'] "+str(selfval)
+                        client.runClient(ipaddr="192.168.1.99", args=updateStr)
+                except:
+                   None
         client.runClient(ipaddr="192.168.1.99", args="UPDATE")
 
     def retranslateUi(self, MainWindow, supplier):
@@ -295,12 +486,22 @@ class Ui_MainWindow(object):
         self.lbl_enabled.setText(_translate("MainWindow", "Enabled"))
         self.lbl_max.setText(_translate("MainWindow", "Max"))
         self.lbl_min.setText(_translate("MainWindow", "Min"))
-        self.btn_submit.setText(_translate("MainWindow", "Submit"))
-        self.lbl_time.setText(_translate("MainWindow", "Time"))
+        self.btn_save.setText(_translate("MainWindow", "Save"))
         self.btn_run.setText(_translate("MainWindow", "Run"))
         self.lbl_sms.setText(_translate("MainWindow", "SMS"))
         self.btn_config.setText(_translate("MainWindow", "Config"))
         self.btn_zero.setText(_translate("MainWindow", "Zero"))
+        self.lbl_mon.setText(_translate("MainWindow", "Monday"))
+        self.lbl_fri.setText(_translate("MainWindow", "Friday"))
+        self.lbl_thu.setText(_translate("MainWindow", "Thursday"))
+        self.lbl_wed.setText(_translate("MainWindow", "Wednesday"))
+        self.lbl_tue.setText(_translate("MainWindow", "Tuesday"))
+        self.lbl_sun.setText(_translate("MainWindow", "Sunday"))
+        self.lbl_sat.setText(_translate("MainWindow", "Saturday"))
+        self.lbl_rundays.setText(_translate("MainWindow", "Scheduled Run Days"))
+        self.lbl_runtimes.setText(_translate("MainWindow", "Scheduled Run Times"))
+        #self.btn_remove_time1.setText(_translate("MainWindow", "-"))
+        self.btn_add_time.setText(_translate("MainWindow", "+"))
         try:
             self.lbl_amazon.setText(_translate("MainWindow", "Amazon"))
             self.lbl_tok.setText(_translate("MainWindow", "Token:"))
