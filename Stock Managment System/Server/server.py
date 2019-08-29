@@ -61,6 +61,7 @@ def commandCheck(c, args):
 
 
 def runJob():
+    fps()
     while True:
         if q:
             job = q.popleft()
@@ -123,6 +124,7 @@ def runRequests():
 
 
 def runServer():
+    fps()
     try:
         rTh = threading.Thread(target=runRequests)
         rTh.start()

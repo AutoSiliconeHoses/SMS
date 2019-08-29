@@ -40,4 +40,8 @@ def stax():
     with open('Suppliers/STAX/stax.tsv', 'w') as txtfile:
         txtfile.write(data)
         txtfile.close()
+
+    with open("Server/Send/Ebay/StockFiles/stax.tsv", "w") as txtfile:
+        txtfile.write(data)
+        txtfile.close()
     print("finished stax.py")

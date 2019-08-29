@@ -76,4 +76,8 @@ def fps():
 		txtfile.write(fullfps)
 		txtfile.close()
 
+	with open("Server/Send/Ebay/StockFiles/fps.tsv", "w") as txtfile:
+		txtfile.write(fullfps)
+		txtfile.close()
+
 	print("finished fps.py")
