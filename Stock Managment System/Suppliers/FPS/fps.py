@@ -48,8 +48,6 @@ def fps():
 		for line in sheffieldFile:
 			sheffield.append(re.split('\t',line.strip()))
 
-
-	# @todo: Binary search
 	sheffield = sorted(sheffield, key=itemgetter(0))
 	leffield = [ line[0] for line in sheffield ]
 
