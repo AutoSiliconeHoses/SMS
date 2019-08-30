@@ -1,4 +1,4 @@
-import yaml, os, re
+import yaml, os, re, csv
 from operator import itemgetter
 
 def Binary_search(L, target):
@@ -42,15 +42,28 @@ for storecode in config['ebay']:
                         stockSort = sorted(stock, key=itemgetter(0))
                         stockSkus = [line[0] for line in stockSort]
 
-                        newdata = ""
+                        newdata = []
+                        newdata.append(store[0])
                         for storeLine in store:
-                            found = Binary_search(stockSkus,storeLine[5])
-                            if found:
-                                print("\t\t", storeLine[5], "has a match")
-                                # TODO: Add to output data
-                        # TODO: Write data to file
-                        with open('''PUT FILEPATH HERE''', 'w') as txtfile:
-                            txtfile.write(newdata)
-                            txtfile.close()
+                            if storeLine[2] is "" and storeLine[3] is "":
+                                lastHeader = storeLine
+                                checked = False
+                            else:
+                                cleanSku = re.sub(r"[\|#].*","",storeLine[5])
+                                found = Binary_search(stockSkus,cleanSku)
+                                if found:
+                                    if storeLine[0] is "": # Requires Header
+                                        if not checked:
+                                            newdata.append(lastHeader)
+                                            checked = True
+                                    storeLine[2] = stockSort[found][1]
+                                    newdata.append(storeLine)
+
+                        # Write to outFile
+                        if len(newdata) > 1:
+                            outPath = os.path.join("Server/Send/Ebay/Updated", storecode.upper() + "-" + supplier + ".csv")
+                            with open(outPath, "w", newline="") as f:
+                                writer = csv.writer(f)
+                                writer.writerows(newdata)
 
                         # TODO: Upload to File Exchange
