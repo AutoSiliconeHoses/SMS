@@ -10,7 +10,7 @@ def fps_sheffield():
 
     if os.path.isfile('Server/Receive/Emails/FPS_STOCK.csv'):
 
-        with open('Suppliers/Emails/FPS_STOCK.csv') as csvfile:
+        with open('Server/Receive/Emails/FPS_STOCK.csv') as csvfile:
             full = csvfile.read().splitlines(True)
             reader = csv.DictReader(full)
             next(reader, None)

@@ -445,9 +445,7 @@ class Ui_MainWindow(object):
             cfg.close()
 
         for value in updateType:
-            print(value)
-            if value is 'monday' or 'tuesday' or 'wednesday' or 'thursday' or 'friday' or 'saturday' or 'sunday':
-                print("days detec")
+            if value in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']:
                 try:
                     selfval = eval("self." + value)
                     if config['suppliers'][self.supplier]['days'][value] is not selfval:
@@ -456,16 +454,13 @@ class Ui_MainWindow(object):
                 except:
                    None
             elif value is 'times':
-                # try:
-                print('times detec')
-                print(self.times)
-                print(config['suppliers'][self.supplier]['times'])
                 if str(config['suppliers'][self.supplier]['times']) is not str(self.times):
-                    for time in range(0, len(self.times)):
-                        updateStr = "CNFED ['suppliers']['"+self.supplier+"']['times']["+str(time)+"] "+str(self.times[time])
-                        client.runClient(ipaddr="192.168.1.99", args=updateStr)
-                # except:
-                #     None
+                    updateStr = "CNFED ['suppliers']['"+self.supplier+"']['times'] ['"+self.times[0]+"'"
+                    for t in range(1, len(self.times)):
+                        updateStr += ",'" + self.times[t] + "'"
+                    updateStr += "]"
+                    print(updateStr)
+                    client.runClient(ipaddr="192.168.1.99", args=updateStr)
             else:
                 try:
                     selfval = eval("self." + value)
