@@ -44,20 +44,38 @@ for storecode in config['ebay']:
 
                         newdata = []
                         newdata.append(store[0])
-                        for storeLine in store:
+                        for storeLine in store[1:-1]:
                             if storeLine[2] is "" and storeLine[3] is "":
                                 lastHeader = storeLine
                                 checked = False
                             else:
-                                cleanSku = re.sub(r"[\|#].*","",storeLine[5])
-                                found = Binary_search(stockSkus,cleanSku)
-                                if found:
-                                    if storeLine[0] is "": # Requires Header
-                                        if not checked:
-                                            newdata.append(lastHeader)
-                                            checked = True
-                                    storeLine[2] = stockSort[found][1]
-                                    newdata.append(storeLine)
+                                splitList = re.split(r"\+",storeLine[5])
+                                splitInts = []
+                                for splitItem in splitList:
+                                    multiDiv = re.search(r"(?<=#)\d*", splitItem)
+                                    if multiDiv is None:
+                                        multiDiv = 1
+                                    else:
+                                        multiDiv = int(multiDiv.group(0))
+                                    cleanSku = re.sub(r"[\|#].*","",splitItem)
+                                    found = Binary_search(stockSkus,cleanSku)
+                                    if found:
+                                        if storeLine[0] is "": # Requires Header
+                                            if not checked:
+                                                newdata.append(lastHeader)
+                                                checked = True
+                                        splitVal = int(int(stockSort[found][1])/multiDiv)
+                                        splitInts.append(splitVal)
+                                        if splitItem is splitList[-1]:
+                                            storeLine[2] = min(splitInts)
+                                            print(storeLine[2], "is the smallest in", splitInts)
+                                            newdata.append(storeLine)
+                                    else:
+                                        splitInts.append(0)
+                                        if splitItem is splitList[-1]:
+                                            storeLine[2] = min(splitInts)
+                                            print(storeLine[2], "is the smallest in", splitInts)
+                                            newdata.append(storeLine)
 
                         # Write to outFile
                         if len(newdata) > 1:
