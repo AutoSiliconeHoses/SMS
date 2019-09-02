@@ -69,6 +69,7 @@ class Ui_MainWindow(object):
 
         self.tab_token = QtWidgets.QWidget()
         self.tab_token.setObjectName("tab_token")
+        self.amazon = True
 
         self.lbl_amazon = QtWidgets.QLabel(self.tab_token)
         self.lbl_amazon.setGeometry(QtCore.QRect(10, 10, 161, 21))
@@ -252,25 +253,26 @@ class Ui_MainWindow(object):
 
                 time1 = time.strptime(config['suppliers'][suppliers]['times'][runtimes], "%H:%M")
 
-                self.time_schedule1 = QtWidgets.QTimeEdit(self.tab)
-                self.time_schedule1.setGeometry(QtCore.QRect(520, position, 161, 26))
-                self.time_schedule1.setObjectName("time_schedule1")
-                self.time_schedule1.setTime(QtCore.QTime(time1[3], time1[4]))
+                self.time_schedule = QtWidgets.QTimeEdit(self.tab)
+                self.time_schedule.setGeometry(QtCore.QRect(520, position, 161, 26))
+                self.time_schedule.setObjectName("time_schedule")
+                self.time_schedule.setTime(QtCore.QTime(time1[3], time1[4]))
+                self.time_schedule_ = partial(self.timeSchedule, position=runtimes, supplier=suppliers)
+                self.time_schedule.timeChanged.connect(self.time_schedule_)
 
                 if runtimes > 0:
-                    self.btn_remove_time1 = QtWidgets.QPushButton(self.tab)
-                    self.btn_remove_time1.setGeometry(QtCore.QRect(690, position, 26, 26))
-                    self.btn_remove_time1.setObjectName("btn_remove_time1")
-                    self.btn_remove_time1.setText(QtCore.QCoreApplication.translate("MainWindow", "-"))
+                    self.btn_remove_time = QtWidgets.QPushButton(self.tab)
+                    self.btn_remove_time.setGeometry(QtCore.QRect(690, position, 26, 26))
+                    self.btn_remove_time.setObjectName("btn_remove_time")
+                    self.btn_remove_time.setText(QtCore.QCoreApplication.translate("MainWindow", "-"))
                     self.removeTime_ = partial(self.removeTime, runtimes, suppliers)
-                    self.btn_remove_time1.clicked.connect(self.removeTime_)
-
+                    self.btn_remove_time.clicked.connect(self.removeTime_)
+                    self.btn_remove_time.clicked.connect(self.time_schedule.hide)
+                    self.btn_remove_time.clicked.connect(self.btn_remove_time.hide)
 
                 position += 30
             self.times = config['suppliers'][suppliers]['times']
-            self.btn_add_time = QtWidgets.QPushButton(self.tab)
-            self.btn_add_time.setGeometry(QtCore.QRect(520, position, 26, 26))
-            self.btn_add_time.setObjectName("btn_add_time")
+            self.addTime(position, suppliers, self.tab)
 
 
 
@@ -327,7 +329,7 @@ class Ui_MainWindow(object):
 
             MainWindow.setCentralWidget(self.centralwidget)
 
-            self.retranslateUi(MainWindow, suppliers)
+            self.retranslateUi(MainWindow, suppliers, config['suppliers'][suppliers]['type'], self.amazon)
             self.btn_save.clicked.connect(self.editconfig)
             self.tabWidget.setCurrentIndex(0)
 
@@ -351,7 +353,7 @@ class Ui_MainWindow(object):
             self.friday = config['suppliers'][self.supplier]['days']['friday']
             self.saturday = config['suppliers'][self.supplier]['days']['saturday']
             self.sunday = config['suppliers'][self.supplier]['days']['sunday']
-            self.times = config['suppliers'][supplier]['times']
+            self.times = config['suppliers'][self.supplier]['times']
 
             if config['suppliers'][self.supplier]['type'] is "ftp":
                 self.user = config['suppliers'][self.supplier]['user']
@@ -366,12 +368,19 @@ class Ui_MainWindow(object):
         except:
             None
 
+    def addTime(self, position, supplier, tab):
+        self.btn_add_time = QtWidgets.QPushButton(tab)
+        self.btn_add_time.setGeometry(QtCore.QRect(520, position, 26, 26))
+        self.btn_add_time.setObjectName("btn_add_time")
+        self.makeNewTime_ = partial(self.makeNewTime, supplier)
+        self.btn_add_time.clicked.connect(self.makeNewTime_)
+
+    def makeNewTime(self, supplier):
+        print(config['suppliers'][supplier]['enabled'])
+
     def removeTime(self, n, supplier):
         self.times = config['suppliers'][supplier]['times']
-        # print(self.times)
-        # print(self.times[n])
         del self.times[n]
-        # print(self.times)
 
     def supplierEnabled(self, state):
         self.enabled = config['suppliers'][self.supplier]['enabled']
@@ -433,10 +442,13 @@ class Ui_MainWindow(object):
         self.max = number
 
     def minSpin(self, number):
-        self.min = number
+        self.min = str
 
-    def timeSchedule():
-        None # tbc
+    def timeSchedule(self, time, position, supplier):
+        self.times = config['suppliers'][supplier]['times']
+        time = time.toPyTime()
+        time = time.strftime("%H:%M")
+        self.times[position] = str(time)
 
     def editconfig(self, supplier):
         updateType = ['enabled', 'max', 'min', 'user', 'passwd', 'file', 'url', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'times']
@@ -454,7 +466,11 @@ class Ui_MainWindow(object):
                 except:
                    None
             elif value is 'times':
-                if str(config['suppliers'][self.supplier]['times']) is not str(self.times):
+                print(str(config['suppliers'][self.supplier]['times']))
+                print(str(self.times))
+                print(self.supplier)
+                if config['suppliers'][self.supplier]['times'] != self.times:
+                    print("change detected")
                     updateStr = "CNFED ['suppliers']['"+self.supplier+"']['times'] ['"+self.times[0]+"'"
                     for t in range(1, len(self.times)):
                         updateStr += ",'" + self.times[t] + "'"
@@ -466,13 +482,15 @@ class Ui_MainWindow(object):
                     selfval = eval("self." + value)
                     if config['suppliers'][self.supplier][value] is not selfval:
                         updateStr = "CNFED ['suppliers']['"+self.supplier+"']['"+value+"'] "+str(selfval)
-                        client.runClient(ipaddr="192.168.1.99", args=updateStr)
+                        result = client.runClient(ipaddr="192.168.1.99", args=updateStr)
+                        print(result)
                 except:
                    None
         client.runClient(ipaddr="192.168.1.99", args="UPDATE")
 
-    def retranslateUi(self, MainWindow, supplier):
+    def retranslateUi(self, MainWindow, supplier, type, amazon):
         _translate = QtCore.QCoreApplication.translate
+        print(type)
         MainWindow.setWindowTitle(_translate("MainWindow", "SMS"))
         self.lbl_s.setText(_translate("MainWindow", "Supplier:"))
         self.lbl_supplier.setText(_translate("MainWindow", supplier))
@@ -495,32 +513,24 @@ class Ui_MainWindow(object):
         self.lbl_sat.setText(_translate("MainWindow", "Saturday"))
         self.lbl_rundays.setText(_translate("MainWindow", "Scheduled Run Days"))
         self.lbl_runtimes.setText(_translate("MainWindow", "Scheduled Run Times"))
-        #self.btn_remove_time1.setText(_translate("MainWindow", "-"))
         self.btn_add_time.setText(_translate("MainWindow", "+"))
-        try:
+        if amazon:
             self.lbl_amazon.setText(_translate("MainWindow", "Amazon"))
             self.lbl_tok.setText(_translate("MainWindow", "Token:"))
             self.label_4.setText(_translate("MainWindow", "Token:"))
             self.lbl_shiptime.setText(_translate("MainWindow", "Lead Shipping Time:"))
             self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_token), _translate("MainWindow", "tokens"))
-        except:
-            None
-        try:
+            amazon = False
+        if type == 'ftp':
             self.lbl_file.setText(_translate("MainWindow", "FTP Path"))
             self.lbl_user.setText(_translate("MainWindow", "User"))
             self.lbl_passwd.setText(_translate("MainWindow", "Password"))
             self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", supplier))
-        except:
-            None
-        try:
+        if type == 'http':
             self.lbl_http.setText(_translate("MainWindow", "HTTP Link:"))
             self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", supplier))
-        except:
-            None
-        try:
+        if type == 'email':
             self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", supplier))
-        except:
-            None
         self.tabWidget.setHidden(True)
 
 class ExampleApp(QtWidgets.QMainWindow, Ui_MainWindow):
