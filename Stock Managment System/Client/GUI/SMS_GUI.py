@@ -239,48 +239,33 @@ class Ui_MainWindow(object):
             self.sunday = config['suppliers'][suppliers]['days']['sunday']
             self.chk_sun.stateChanged.connect(self.sundayEnabled)
 
-
-
-
-
-
             self.lbl_runtimes = QtWidgets.QLabel(self.tab)
             self.lbl_runtimes.setGeometry(QtCore.QRect(520, 30, 151, 21))
             self.lbl_runtimes.setObjectName("lbl_runtimes")
 
-            position = 80
-            for runtimes in range(0, len(config['suppliers'][suppliers]['times'])):
+            self.formLayoutWidget = QtWidgets.QWidget(self.tab)
+            self.formLayoutWidget.setGeometry(QtCore.QRect(520, 80, 95, 661))
+            self.formLayoutWidget.setObjectName("formLayoutWidget")
+            self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
+            self.formLayout.setContentsMargins(0, 0, 0, 0)
+            self.formLayout.setObjectName("formLayout")
+            self.formLayout.setVerticalSpacing(6)
 
-                time1 = time.strptime(config['suppliers'][suppliers]['times'][runtimes], "%H:%M")
-
-                self.time_schedule = QtWidgets.QTimeEdit(self.tab)
-                self.time_schedule.setGeometry(QtCore.QRect(520, position, 161, 26))
-                self.time_schedule.setObjectName("time_schedule")
-                self.time_schedule.setTime(QtCore.QTime(time1[3], time1[4]))
-                self.time_schedule_ = partial(self.timeSchedule, position=runtimes, supplier=suppliers)
-                self.time_schedule.timeChanged.connect(self.time_schedule_)
-
-                if runtimes > 0:
-                    self.btn_remove_time = QtWidgets.QPushButton(self.tab)
-                    self.btn_remove_time.setGeometry(QtCore.QRect(690, position, 26, 26))
-                    self.btn_remove_time.setObjectName("btn_remove_time")
-                    self.btn_remove_time.setText(QtCore.QCoreApplication.translate("MainWindow", "-"))
-                    self.removeTime_ = partial(self.removeTime, runtimes, suppliers)
-                    self.btn_remove_time.clicked.connect(self.removeTime_)
-                    self.btn_remove_time.clicked.connect(self.time_schedule.hide)
-                    self.btn_remove_time.clicked.connect(self.btn_remove_time.hide)
-
-                position += 30
             self.times = config['suppliers'][suppliers]['times']
-            self.addTime(position, suppliers, self.tab)
+            print('self.times' + str(self.times))
+            self.removedpositions = []
+            for runtimes in range(0, len(self.times)):
+                time1 = time.strptime(self.times[runtimes], "%H:%M")
+                self.addTimeSchedule(self.formLayout, self.tab, runtimes, suppliers, time1, len(self.times), self.removedpositions)
+                if runtimes > 0:
+                    self.addRemoveButton(self.formLayout, self.tab, runtimes, suppliers, self.removedpositions)
+                    print('runtimes = ' + str(runtimes))
 
-
-
-
-
-
-
-
+            self.nrtimes = len(self.times)
+            self.subtractcount = 0
+            self.addcount = len(self.times)
+            print("addcount = " + str(self.addcount))
+            self.addTime(self.addcount, suppliers, self.tab, self.formLayout, self.addcount, self.removedpositions)
 
             if (config['suppliers'][suppliers]['type'] == 'ftp'):
                 self.lbl_user = QtWidgets.QLabel(self.tab)
@@ -354,6 +339,8 @@ class Ui_MainWindow(object):
             self.saturday = config['suppliers'][self.supplier]['days']['saturday']
             self.sunday = config['suppliers'][self.supplier]['days']['sunday']
             self.times = config['suppliers'][self.supplier]['times']
+            self.nrtimes = len(self.times)
+            self.addtime = len(self.times)
 
             if config['suppliers'][self.supplier]['type'] is "ftp":
                 self.user = config['suppliers'][self.supplier]['user']
@@ -368,19 +355,85 @@ class Ui_MainWindow(object):
         except:
             None
 
-    def addTime(self, position, supplier, tab):
+    def addTimeSchedule(self, formLayout, tab, layoutpos, supplier, time1, times, removedpositions):
+        self.time_schedule = QtWidgets.QTimeEdit(tab)
+        self.formLayout.setWidget(layoutpos, QtWidgets.QFormLayout.LabelRole, self.time_schedule)
+        self.time_schedule.setObjectName("time_schedule")
+        self.time_schedule.setTime(QtCore.QTime(time1[3], time1[4]))
+        self.timeSchedule_ = partial(self.timeSchedule, xposition=times, supplier=supplier, removedpositions=removedpositions, n=layoutpos)
+        self.time_schedule.timeChanged.connect(self.timeSchedule_)
+
+    def addRemoveButton(self, formlayout, tab, layoutpos, supplier, removedpositions):
+        self.btn_remove_time = QtWidgets.QPushButton(tab)
+        self.formLayout.setWidget(layoutpos, QtWidgets.QFormLayout.FieldRole, self.btn_remove_time)
+        self.btn_remove_time.setObjectName("btn_remove_time")
+        self.btn_remove_time.setText(QtCore.QCoreApplication.translate("MainWindow", "-"))
+        self.removeTime_ = partial(self.removeTime, layoutpos, supplier, removedpositions)
+        self.btn_remove_time.clicked.connect(self.removeTime_)
+        self.removeTimeWidgets_ = partial(self.removeTimeWidgets, self.btn_remove_time, self.time_schedule, self.formLayout)
+        self.btn_remove_time.clicked.connect(self.removeTimeWidgets_)
+
+    def addTime(self, formposition, supplier, tab, formLayout, addcount, removedpositions):
         self.btn_add_time = QtWidgets.QPushButton(tab)
-        self.btn_add_time.setGeometry(QtCore.QRect(520, position, 26, 26))
+        formLayout.setWidget(formposition, QtWidgets.QFormLayout.FieldRole, self.btn_add_time)
         self.btn_add_time.setObjectName("btn_add_time")
-        self.makeNewTime_ = partial(self.makeNewTime, supplier)
+        self.makeNewTime_ = partial(self.makeNewTime, supplier, tab, self.btn_add_time, formLayout, addcount, removedpositions)
+        self.btn_add_time.setText(QtCore.QCoreApplication.translate("MainWindow", "+"))
         self.btn_add_time.clicked.connect(self.makeNewTime_)
 
-    def makeNewTime(self, supplier):
-        print(config['suppliers'][supplier]['enabled'])
+    def makeNewTime(self, supplier, tab, button, layout, addcount, removedpositions):
+        time1 = time.strptime('12:00', "%H:%M")
+        print('self.times1 ' + str(self.times))
+        self.times.append('12:00')
+        print('self.times2 ' + str(self.times))
+        addcount = addcount + 1
+        layout.removeWidget(button)
+        button.deleteLater()
+        button = None
+        self.addTimeSchedule(self.formLayout, tab, addcount, supplier, time1, len(self.times), removedpositions)
+        self.addRemoveButton(self.formLayout, tab, addcount, supplier, removedpositions)
+        self.addTime(addcount + 1, supplier, tab, self.formLayout, addcount, removedpositions)
+        print('self.times3 ' + str(self.times))
 
-    def removeTime(self, n, supplier):
-        self.times = config['suppliers'][supplier]['times']
-        del self.times[n]
+    def timeSchedule(self, time, xposition, supplier, removedpositions, n):
+        time = time.toPyTime()
+        time = time.strftime("%H:%M")
+        count = 1
+        for element in removedpositions:
+            if n > element:
+                count += 1
+        print("count in timeSchedule = " + str(count))
+        print('removedpositions in timeSchedule' + str(removedpositions))
+        self.times[xposition-count] = str(time)
+        print('self.times4 ' + str(self.times))
+
+    def removeTime(self, n, supplier, removedpositions):
+        self.nrtimes = len(self.times)
+        print("n" + str(n))
+        while True:
+            count = 0
+            for element in removedpositions:
+                if n > element:
+                    count += 1
+            if n < self.nrtimes:
+                print("n - count = " + str(n - count))
+                del self.times[n-count]
+                if n not in removedpositions:
+                    removedpositions.append(n)
+                break
+            else:
+                n = n - 1
+        self.nrtimes = len(self.times)
+        print("n=" + str(n))
+        print('removedpositions' + str(removedpositions))
+
+    def removeTimeWidgets(self, button, time_schedule, layout):
+        layout.removeWidget(button)
+        layout.removeWidget(time_schedule)
+        button.deleteLater()
+        time_schedule.deleteLater()
+        button = None
+        time_schedule = None
 
     def supplierEnabled(self, state):
         self.enabled = config['suppliers'][self.supplier]['enabled']
@@ -444,11 +497,6 @@ class Ui_MainWindow(object):
     def minSpin(self, number):
         self.min = str
 
-    def timeSchedule(self, time, position, supplier):
-        self.times = config['suppliers'][supplier]['times']
-        time = time.toPyTime()
-        time = time.strftime("%H:%M")
-        self.times[position] = str(time)
 
     def editconfig(self, supplier):
         updateType = ['enabled', 'max', 'min', 'user', 'passwd', 'file', 'url', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'times']
@@ -466,16 +514,12 @@ class Ui_MainWindow(object):
                 except:
                    None
             elif value is 'times':
-                print(str(config['suppliers'][self.supplier]['times']))
-                print(str(self.times))
-                print(self.supplier)
+                self.times.sort()
                 if config['suppliers'][self.supplier]['times'] != self.times:
-                    print("change detected")
                     updateStr = "CNFED ['suppliers']['"+self.supplier+"']['times'] ['"+self.times[0]+"'"
                     for t in range(1, len(self.times)):
                         updateStr += ",'" + self.times[t] + "'"
                     updateStr += "]"
-                    print(updateStr)
                     client.runClient(ipaddr="192.168.1.99", args=updateStr)
             else:
                 try:
@@ -483,14 +527,12 @@ class Ui_MainWindow(object):
                     if config['suppliers'][self.supplier][value] is not selfval:
                         updateStr = "CNFED ['suppliers']['"+self.supplier+"']['"+value+"'] "+str(selfval)
                         result = client.runClient(ipaddr="192.168.1.99", args=updateStr)
-                        print(result)
                 except:
                    None
         client.runClient(ipaddr="192.168.1.99", args="UPDATE")
 
     def retranslateUi(self, MainWindow, supplier, type, amazon):
         _translate = QtCore.QCoreApplication.translate
-        print(type)
         MainWindow.setWindowTitle(_translate("MainWindow", "SMS"))
         self.lbl_s.setText(_translate("MainWindow", "Supplier:"))
         self.lbl_supplier.setText(_translate("MainWindow", supplier))
