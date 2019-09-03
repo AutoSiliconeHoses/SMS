@@ -7,8 +7,9 @@ def runClient(ipaddr="192.168.1.131", args=None):
     elif args is not None:
         None
     else:
-        print("Error: No arguments given")
-        return
+        args = input("Enter arguments: ")
+        if args is "":
+            return
 
     queue = None
     s = socket.socket()

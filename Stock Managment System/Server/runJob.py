@@ -47,7 +47,7 @@ def runJob(q):
             elif job[0] == "UPDATE":  # Update server
                 print("Updating....")
                 try:
-                    py_compile.compile('Server/server.py', doraise=True)
+                    py_compile.compile('__servinit__.py', doraise=True)
                     print("Compilation Check Successful")
                     restart_program(q)
                 except py_compile.PyCompileError:
