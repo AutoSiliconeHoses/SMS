@@ -77,10 +77,11 @@ class FetchEmail():
         self.error = "Failed to retreive emails."
         return emails
 
-fe = FetchEmail()
-print("Collecting unread messages")
-unread = fe.fetch_unread_messages()
-print("Collecting attachments")
-for email in unread:
-    fe.save_attachment(email)
-fe.close_connection()
+def download():
+    fe = FetchEmail()
+    print("Collecting unread messages")
+    unread = fe.fetch_unread_messages()
+    print("Collecting attachments")
+    for email in unread:
+        fe.save_attachment(email)
+    fe.close_connection()

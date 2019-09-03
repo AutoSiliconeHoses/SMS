@@ -4,7 +4,6 @@ from Server.runJob import runJob
 from Server.runRequests import runRequests
 
 def runServer():
-
     q = collections.deque()
     if os.path.exists('import_queue'):  # tries to find a previously loaded queue. Used for update
         with open('import_queue', 'rb') as file:
@@ -25,4 +24,5 @@ def runServer():
     except e:
         print("There was an error creating threads.")
         exit()
+        
 runServer()

@@ -124,7 +124,6 @@ def runRequests():
 
 
 def runServer():
-    fps()
     try:
         rTh = threading.Thread(target=runRequests)
         rTh.start()
