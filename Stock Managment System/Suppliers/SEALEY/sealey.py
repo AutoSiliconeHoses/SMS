@@ -1,4 +1,4 @@
-import openpyxl, os, sys, yaml
+import openpyxl, os, sys, yaml, csv
 import Server.Receive.supplier_ftp as supplier_ftp
 
 #Download file from FTP
@@ -8,24 +8,28 @@ def sealey():
 
     with open("config.yml", 'r') as cfg:
         config = yaml.load(cfg, Loader=yaml.FullLoader)
+    MAX = config['suppliers']['sealey']['max']
+    MIN = config['suppliers']['sealey']['min']
 
+    print("Loading file...")
     doc = openpyxl.load_workbook('Suppliers/SEALEY/Datacut.xlsx')
     sheet = doc['Export_models_select_files_xls']
 
+    print("Building list")
     vallist = []
     for row in range(2, sheet.max_row + 1):
-        vallist.append((sheet.cell(row=row, column=1).value+"-SY", sheet.cell(row=row, column = 5).value))
+        sku = str(sheet.cell(row=row, column=1).value+"-SY")
+        stock = int(sheet.cell(row=row, column = 5).value)
 
-    temptext = ""
-    for i in range(0, len(vallist)):
-        temptext += vallist[i][0] + "\t" + str(vallist[i][1]) + "\n"
+        if stock > MAX:
+            stock = MAX
+        elif stock < MIN:
+            stock = 0
+        vallist.append([sku,stock])
 
-    with open("Suppliers/SEALEY/sealey.tsv", "w") as text:
-        text.write(temptext)
-        text.close()
-
-    with open("Server/Send/Ebay/StockFiles/sealey.tsv", "w") as text:
-        text.write(temptext)
-        text.close()
+    print("Writing to file")
+    with open("Server/Send/StockFiles/sealey.tsv", "w", newline="") as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerows(vallist)
 
     print("finished sealey.py")
