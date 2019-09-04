@@ -1,4 +1,4 @@
-import openpyxl, os, sys, yaml, csv
+import openpyxl, os, yaml, csv
 import Server.Receive.supplier_ftp as supplier_ftp
 
 #Download file from FTP

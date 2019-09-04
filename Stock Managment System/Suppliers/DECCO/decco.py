@@ -1,19 +1,9 @@
-import openpyxl, time, os, zipfile, glob
+import os, zipfile, csv
 
 def decco():
     print("Starting Decco")
-    doc = openpyxl.load_workbook('')
-    sheet = doc['']
-
-    vallist = []
-    for row in range(2, sheet.max_row + 1):
-        vallist.append((sheet.cell(row=row, column=1).value+"-SY", sheet.cell(row=row, column = 5).value))
-
-    temptext = ""
-    for i in range(0, len(vallist)):
-        temptext = temptext + vallist[i][0] + "\t" + str(vallist[i][1]) + "\n"
-
-    with open("Server/Send/StockFiles/decco.tsv", "w") as txtfile:
-        txtfile.write(temptext)
-        txtfile.close()
-    print("Finished Decco")
+    if os.path.isfile('Server/Receive/Emails/decco.zip'):
+        with zipfile.ZipFile('Server/Receive/Emails/decco.zip', 'r') as zip_ref:
+            zip_ref.extractall('Suppliers/DECCO')
+        os.rename('Suppliers/DECCO/barc5-3628270409191600.xls', "Suppliers/DECCO/decco.xml")
+        # TODO: Parse XML despite it being broken
