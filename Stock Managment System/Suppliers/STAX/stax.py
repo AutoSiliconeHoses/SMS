@@ -12,9 +12,9 @@ def download_file_from_server_endpoint(server_endpoint, local_file_path):
         with open(local_file_path, 'wb') as local_file:
             for chunk in response.iter_content(chunk_size=128):
                 local_file.write(chunk)
+
 def stax():
     print("running stax.py")
-
 
     # Read config file
     with open("config.yml", 'r') as cfg:
@@ -37,11 +37,8 @@ def stax():
                 row['Quantity'] = "0"
             data += (row['Item']+"-SX")+"\t"+row['Quantity']+"\n"
 
-    with open('Suppliers/STAX/stax.tsv', 'w') as txtfile:
+    with open("Server/Send/StockFiles/stax.tsv", "w") as txtfile:
         txtfile.write(data)
         txtfile.close()
 
-    with open("Server/Send/Ebay/StockFiles/stax.tsv", "w") as txtfile:
-        txtfile.write(data)
-        txtfile.close()
     print("finished stax.py")

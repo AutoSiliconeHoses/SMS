@@ -35,7 +35,7 @@ def runEbay(upload=True):
                 if config['suppliers'][supplier]['enabled']:
                     storePath = os.path.join("Server/Send/Ebay/StoreFiles/", storecode.upper(), supplier+"-FULLSTOCK.csv")
                     if os.path.isfile(storePath): # Check for matching files
-                        stockPath = os.path.join("Server/Send/Ebay/StockFiles/", supplier + ".tsv")
+                        stockPath = os.path.join("Server/Send/StockFiles/", supplier + ".tsv")
                         if os.path.isfile(stockPath):
                             print("\t", supplier, end=" ")
 

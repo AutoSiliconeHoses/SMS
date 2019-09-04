@@ -1,6 +1,7 @@
 import openpyxl, time, os, zipfile, glob
 
 def decco():
+    print("Starting Decco")
     doc = openpyxl.load_workbook('')
     sheet = doc['']
 
@@ -12,6 +13,7 @@ def decco():
     for i in range(0, len(vallist)):
         temptext = temptext + vallist[i][0] + "\t" + str(vallist[i][1]) + "\n"
 
-    text = open("Suppliers/DECCO/decco.tsv", "w")
-    text.write(temptext)
-    text.close()
+    with open("Server/Send/StockFiles/decco.tsv", "w") as txtfile:
+        txtfile.write(temptext)
+        txtfile.close()
+    print("Finished Decco")
