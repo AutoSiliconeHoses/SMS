@@ -18,23 +18,9 @@ def Binary_search(L, target):
 
 
 def fps():
-	start_time = time.time()
 	print("running fps.py")
-	try:
-		os.remove("Suppliers/FPS/fps_sheffield.tsv")
-	except:
-		None
 	fps_sheffield.fps_sheffield()
-
-	try:
-		os.remove("Suppliers/FPS/fps_leeds.tsv")
-	except:
-		None
 	fps_leeds.fps_leeds()
-	try:
-		os.remove("Suppliers/FPS/fps.tsv")
-	except:
-		None
 
 	leeds = []
 	with open("Suppliers/FPS/fps_leeds.tsv") as l:
@@ -51,7 +37,6 @@ def fps():
 	sheffield = sorted(sheffield, key=itemgetter(0))
 	leffield = [ line[0] for line in sheffield ]
 
-	# print(len(leeds), " ", len(sheffield))
 	fullfps = ""
 	matches = []
 	for lLine in leeds:
@@ -70,11 +55,7 @@ def fps():
 		if not found:
 			fullfps += sLine[0] + "\t" + sLine[1] + "\n"
 
-	with open('Suppliers/FPS/fps.tsv', 'w') as txtfile:
-		txtfile.write(fullfps)
-		txtfile.close()
-
-	with open("Server/Send/Ebay/StockFiles/fps.tsv", "w") as txtfile:
+	with open("Server/Send/StockFiles/fps.tsv", "w") as txtfile:
 		txtfile.write(fullfps)
 		txtfile.close()
 

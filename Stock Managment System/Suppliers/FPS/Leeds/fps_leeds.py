@@ -9,7 +9,7 @@ def fps_leeds():
     temptext = ""
 
     if os.path.isfile('Server/Receive/Emails/FPS_LEEDS.xlsx'):
-        for file in glob.glob('Suppliers/Emails/FPS_LEEDS.xlsx'):
+        for file in glob.glob('Server/Receive/Emails/FPS_LEEDS.xlsx'):
             doc = openpyxl.load_workbook(file)
             sheet = doc.active
 
@@ -34,5 +34,3 @@ def fps_leeds():
             text.close()
     else:
         print("Error: FPS_LEEDS file not found")
-
-#fps_leeds()
