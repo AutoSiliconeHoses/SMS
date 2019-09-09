@@ -51,7 +51,6 @@ def decco():
         vallist = []
         for row in tabledata[6:-1]:
             if len(row) >= 16:
-                print(row)
                 sku = str(row[1]+"-DC")
                 stock = int(row[16])
 
