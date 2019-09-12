@@ -4,7 +4,7 @@ with open("config.yml", 'r') as cfg:
     config = yaml.load(cfg, Loader=yaml.FullLoader)
 
 class AmazonMWS():
-    def format(self, file, prime=False):
+    def format(self, file, prime=False, zero=False):
         # Create alter list
         alter = []
         with open("Server/Send/Amazon/alterlist.csv") as csvfile:
@@ -22,6 +22,8 @@ class AmazonMWS():
             for row in reader:
                 if row[0] in [line[0] for line in alter]:
                     row[1] = alter[[line[0] for line in alter].index(row[0])][1]
+                if zero:
+                    row[1] = 0
                 if prime:
                     data.append([row[0]+"-PRIME","","","",row[1]])
                 else:

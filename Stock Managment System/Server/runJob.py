@@ -52,6 +52,11 @@ def runJob(q):
                     processPool.close()
                     processPool.join()
 
+                    if "zero" in options:
+                        zero = True
+                    else:
+                        zero = False
+
                     # Destination checks
                     if "amazon" in destinations:
                         print("Sending files to Amazon")
@@ -59,10 +64,11 @@ def runJob(q):
                             prime = True
                         else:
                             prime = False
+
                         mws = amazon.AmazonMWS()
                         newfiles = []
                         for supplier in suppliers:
-                            newfile = mws.format("Server/Send/StockFiles/"+supplier+".tsv",prime=prime)
+                            newfile = mws.format("Server/Send/StockFiles/"+supplier+".tsv",prime=prime, zero=zero)
                             newfiles.append(newfile)
                         # NOTE: Uncomment when ready to run
                         # results = mws.SubmitFeed(newfiles)
@@ -73,7 +79,7 @@ def runJob(q):
                         print("Sending files to Ebay")
                         eb = ebay.EbayAPI()
                         # NOTE: Change to True when ready to run
-                        eb.process(suppliers=suppliers,upload=False)
+                        eb.process(suppliers=suppliers,upload=False,zero=zero)
                         print("Sent")
 
                     if "dropship" in destinations:

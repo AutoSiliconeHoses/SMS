@@ -28,7 +28,7 @@ with open("config.yml", 'r') as cfg:
     config = yaml.load(cfg, Loader=yaml.FullLoader)
 
 class EbayAPI():
-    def process(self, suppliers, upload=True):
+    def process(self, suppliers, upload=True, zero=False):
         for storecode in config['ebay']: # Loop through enabled stores
             if config['ebay'][storecode]['enabled']:
                 print(storecode.upper())
@@ -79,7 +79,10 @@ class EbayAPI():
                                                     if not checked:
                                                         newdata.append(lastHeader)
                                                         checked = True
-                                                splitVal = int(int(stockSort[found][1])/multiDiv) # Divide stock number by divider and floor
+                                                if zero:
+                                                    splitVal = 0
+                                                else:
+                                                    splitVal = int(int(stockSort[found][1])/multiDiv) # Divide stock number by divider and floor
                                                 splitInts.append(splitVal)
                                                 if splitItem is splitList[-1]: # Check if last value in splitlist. NOTE: Will not append with broken skus, this might be a good thing
                                                     storeLine[2] = min(splitInts)
