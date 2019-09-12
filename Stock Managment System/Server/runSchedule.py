@@ -22,7 +22,7 @@ def runSchedule():
                     if config['suppliers'][s]['times'] is not None:
                         for times in config['suppliers'][s]['times']:
                             print("\t", day, " @", times)
-                            schedStr = "schedule.every()."+day+".at('"+times+"').do(client.runClient, ipaddr='"+socket.gethostbyname(socket.gethostname())+"', args='RUN "+s+"')"
+                            schedStr = "schedule.every()."+day+".at('"+times+"').do(client.runClient, ipaddr='"+socket.gethostbyname(socket.gethostname())+"', args='RUN sup=["+s+"]')"
                             exec(schedStr)
 
     # print(schedule.jobs)

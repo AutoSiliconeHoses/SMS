@@ -1,5 +1,7 @@
-import collections, multiprocessing, pickle, os, sys, py_compile, time, yaml
+import collections, multiprocessing, pickle, os, sys, py_compile, time, yaml, re
 import Server.configedit as configedit
+import Server.Send.Amazon.amazon as amazon
+import Server.Send.Ebay.ebay as ebay
 
 # Read config file
 with open("config.yml", 'r') as cfg:
@@ -23,9 +25,19 @@ def runJob(q):
     while True:
         if q:
             job = q.popleft()
+            suppliers = destinations = options = [] # Sets all to a blank array to avoid reference issues
+
             if job[0] == "RUN":  # Runs  the supplier scripts
-                suppliers = job[1:len(job)]  # Makes a list of suppliers to go through
-                if suppliers:
+                args = job[1:len(job)]  # Breaks down the arguments given into components using RegEx
+                for arg in args: 
+                    if re.search(r"(?<=sup=\[).*?(?=\])",arg):
+                        suppliers = re.search(r"(?<=sup=\[).*?(?=\])",arg).group(0).split(",")
+                    elif re.search(r"(?<=dest=\[).*?(?=\])",arg):
+                        destinations = re.search(r"(?<=dest=\[).*?(?=\])",arg).group(0).split(",")
+                    elif re.search(r"(?<=opt=\[).*?(?=\])",arg):
+                        options = re.search(r"(?<=opt=\[).*?(?=\])",arg).group(0).split(",")
+                print(suppliers,destinations,options)
+                if ('' not in suppliers) and suppliers:
                     processPool = multiprocessing.Pool()  # Makes process pool
                     supplierslist = []
                     for s in suppliers:
@@ -40,10 +52,38 @@ def runJob(q):
                     processPool.close()
                     processPool.join()
 
+                    # Destination checks
+                    if "amazon" in destinations:
+                        print("Sending files to Amazon")
+                        if "prime" in options:
+                            prime = True
+                        else:
+                            prime = False
+                        mws = amazon.AmazonMWS()
+                        newfiles = []
+                        for supplier in suppliers:
+                            newfile = mws.format("Server/Send/StockFiles/"+supplier+".tsv",prime=prime)
+                            newfiles.append(newfile)
+                        # NOTE: Uncomment when ready to run
+                        # results = mws.SubmitFeed(newfiles)
+                        # TODO: Determine Success/Fail, report and move file accordingly (Can also be done in amazon.py)
+                        print("Sent")
+
+                    if "ebay" in destinations:
+                        print("Sending files to Ebay")
+                        eb = ebay.EbayAPI()
+                        # NOTE: Change to True when ready to run
+                        eb.process(suppliers=suppliers,upload=False)
+                        print("Sent")
+
+                    if "dropship" in destinations:
+                        print("Dropship not yet implemented")
                 else:
                     print("Error: No suppliers given")
+
             elif job[0] == "CNFED":  # Config edit
                 configedit.update(job[1], job[2])
+
             elif job[0] == "UPDATE":  # Update server
                 print("Updating....")
                 try:
