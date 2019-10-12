@@ -8,8 +8,18 @@ def sealey():
 
     with open("config.yml", 'r') as cfg:
         config = yaml.load(cfg, Loader=yaml.FullLoader)
+
     MAX = config['suppliers']['sealey']['max']
     MIN = config['suppliers']['sealey']['min']
+
+    # Create alter list
+    alter = []
+    with open('Suppliers/alterlist.csv') as altercsv:
+        csvlist = list(csv.reader(altercsv))
+        skuind = csvlist[0].index("sealey")
+        quaind = skuind + 1
+        for row in csvlist[2:]:
+            alter.append([row[skuind],row[quaind]])
 
     print("Loading file...")
     doc = openpyxl.load_workbook('Suppliers/SEALEY/Datacut.xlsx')
@@ -21,6 +31,10 @@ def sealey():
         sku = str(sheet.cell(row=row, column=1).value+"-SY")
         stock = int(sheet.cell(row=row, column = 5).value)
 
+        # Alter
+        if sku in [line[0] for line in alter]:
+            stock = alter[[line[0] for line in alter].index(sku)][1]
+            
         if stock > MAX:
             stock = MAX
         elif stock < MIN:

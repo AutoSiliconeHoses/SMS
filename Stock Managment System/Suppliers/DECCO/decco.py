@@ -11,6 +11,15 @@ def decco():
         MAX = config['suppliers']['decco']['max']
         MIN = config['suppliers']['decco']['min']
 
+        # Create alter list
+        alter = []
+        with open('Suppliers/alterlist.csv') as altercsv:
+            csvlist = list(csv.reader(altercsv))
+            skuind = csvlist[0].index("decco")
+            quaind = skuind + 1
+            for row in csvlist[2:]:
+                alter.append([row[skuind],row[quaind]])
+
         # Fetch file and unzip
         with zipfile.ZipFile('Server/Receive/Emails/decco.zip', 'r') as zip_ref:
             zip_ref.extractall('Suppliers/DECCO')
@@ -53,6 +62,10 @@ def decco():
             if len(row) >= 16:
                 sku = str(row[1]+"-DC")
                 stock = int(row[16])
+
+                # Alter
+                if sku in [line[0] for line in alter]:
+                    stock = alter[[line[0] for line in alter].index(sku)][1]
 
                 if stock > MAX:
                     stock = MAX

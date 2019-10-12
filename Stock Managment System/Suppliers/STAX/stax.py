@@ -23,6 +23,15 @@ def stax():
     MAX = config['suppliers']['fps']['max']
     MIN = config['suppliers']['fps']['min']
 
+    # Create alter list
+    alter = []
+    with open('Suppliers/alterlist.csv') as altercsv:
+        csvlist = list(csv.reader(altercsv))
+        skuind = csvlist[0].index("stax")
+        quaind = skuind + 1
+        for row in csvlist[2:]:
+            alter.append([row[skuind],row[quaind]])
+
     download_file_from_server_endpoint(config['suppliers']['stax']['url'], "Suppliers/STAX/stax.csv")
 
     with open('Suppliers/STAX/stax.csv') as csvfile:
@@ -31,10 +40,15 @@ def stax():
         next(reader, None)
         data = ""
         for row in reader:
+            # Alter
+            if row['Item']+"-SX" in [line[0] for line in alter]:
+                row['Quantity'] = alter[[line[0] for line in alter].index(row['Item']+"-SX")][1]
+
             if int(row['Quantity']) > MAX:
                 row['Quantity'] = str(MAX)
             elif int(row['Quantity']) < MIN:
                 row['Quantity'] = "0"
+
             data += (row['Item']+"-SX")+"\t"+row['Quantity']+"\n"
 
     with open("Server/Send/StockFiles/stax.tsv", "w") as txtfile:

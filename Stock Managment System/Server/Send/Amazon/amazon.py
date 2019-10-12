@@ -5,14 +5,6 @@ with open("config.yml", 'r') as cfg:
 
 class AmazonMWS():
     def format(self, file, prime=False, zero=False):
-        # Create alter list
-        alter = []
-        with open("Server/Send/Amazon/alterlist.csv") as csvfile:
-            full = csvfile.read().splitlines(True)
-            alterdata = csv.DictReader(full)
-            for line in alterdata:
-                alter.append((line['sku'],line['quantity']))
-
         data = [["sku","price","minimum-seller-allowed-price","maximum-seller-allowed-price","quantity","leadtime-to-ship"]] # Add header
         lead = config['amazon']['leadShipping']
 
@@ -20,8 +12,6 @@ class AmazonMWS():
         with open(file) as tsvfile:
             reader = csv.reader(tsvfile, delimiter="\t")
             for row in reader:
-                if row[0] in [line[0] for line in alter]:
-                    row[1] = alter[[line[0] for line in alter].index(row[0])][1]
                 if zero:
                     row[1] = 0
                 if prime:
