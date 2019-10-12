@@ -66,12 +66,12 @@ class FetchEmail():
                     ret, data = self.connection.fetch(message,'(RFC822)')
                 except:
                     print("No new emails to read.")
-                    self.close_connection()
-                    exit()
+                    # self.close_connection()
+                    return None
                 msg = email.message_from_bytes(data[0][1])
                 if isinstance(msg, str) == False:
                     emails.append(msg)
-                response, data = self.connection.store(message, '+FLAGS','\\Seen')
+                # response, data = self.connection.store(message, '+FLAGS','\\Seen')
             return emails
 
         self.error = "Failed to retreive emails."
@@ -81,7 +81,8 @@ def download():
     fe = FetchEmail()
     print("Collecting unread messages")
     unread = fe.fetch_unread_messages()
-    print("Collecting attachments")
-    for email in unread:
-        fe.save_attachment(email)
+    if unread:
+        print("Collecting attachments")
+        for email in unread:
+            fe.save_attachment(email)
     fe.close_connection()
