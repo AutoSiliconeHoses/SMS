@@ -36,14 +36,21 @@ def runJob(q):
                         destinations = re.search(r"(?<=dest=\[).*?(?=\])",arg).group(0).split(",")
                     elif re.search(r"(?<=opt=\[).*?(?=\])",arg):
                         options = re.search(r"(?<=opt=\[).*?(?=\])",arg).group(0).split(",")
+
                 print(suppliers,destinations,options)
+                if "zero" in options:
+                    zero = True
+                else:
+                    zero = False
+
                 if ('' not in suppliers) and suppliers:
                     processPool = multiprocessing.Pool()  # Makes process pool
                     supplierslist = []
                     for s in suppliers:
                         if s not in supplierslist:
                             supplierslist.append(s)
-                            try:
+                            s = s + "(" + str(zero) + ")"
+                            try: 
                                 processPool.apply_async(eval(s))  # Creates pool in processPool for each supplier
                             except:
                                 print("Could not execute:", s)
@@ -51,11 +58,6 @@ def runJob(q):
                             print("Error: " + s + " will only run once per request")
                     processPool.close()
                     processPool.join()
-
-                    if "zero" in options:
-                        zero = True
-                    else:
-                        zero = False
 
                     # Destination checks
                     if "amazon" in destinations:
@@ -68,7 +70,7 @@ def runJob(q):
                         mws = amazon.AmazonMWS()
                         newfiles = []
                         for supplier in suppliers:
-                            newfile = mws.format("Server/Send/StockFiles/"+supplier+".tsv",prime=prime, zero=zero)
+                            newfile = mws.format("Server/Send/StockFiles/"+supplier+".tsv",prime=prime)
                             newfiles.append(newfile)
                         # NOTE: Uncomment when ready to run
                         # results = mws.SubmitFeed(newfiles)
@@ -79,7 +81,7 @@ def runJob(q):
                         print("Sending files to Ebay")
                         eb = ebay.EbayAPI()
                         # NOTE: Change to True when ready to run
-                        eb.process(suppliers=suppliers,upload=False,zero=zero)
+                        eb.process(suppliers=suppliers,upload=False)
                         print("Sent")
 
                     if "dropship" in destinations:

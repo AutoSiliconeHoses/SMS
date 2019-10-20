@@ -13,8 +13,11 @@ def download_file_from_server_endpoint(server_endpoint, local_file_path):
             for chunk in response.iter_content(chunk_size=128):
                 local_file.write(chunk)
 
-def stax():
-    print("running stax.py")
+def stax(zero=False):
+    if zero:
+        print("Zeroing Stax")
+    else:
+        print("Starting Stax")
 
     # Read config file
     with open("config.yml", 'r') as cfg:
@@ -38,21 +41,25 @@ def stax():
         full = csvfile.read().splitlines(True)
         reader = csv.DictReader(full[1:])
         next(reader, None)
-        data = ""
+        data = []
         for row in reader:
             # Alter
             if row['Item']+"-SX" in [line[0] for line in alter]:
                 row['Quantity'] = alter[[line[0] for line in alter].index(row['Item']+"-SX")][1]
 
             if int(row['Quantity']) > MAX:
-                row['Quantity'] = str(MAX)
+                row['Quantity'] = MAX
             elif int(row['Quantity']) < MIN:
-                row['Quantity'] = "0"
+                row['Quantity'] = 0
 
-            data += (row['Item']+"-SX")+"\t"+row['Quantity']+"\n"
+            if zero:
+                row['Quantity'] = 0
 
-    with open("Server/Send/StockFiles/stax.tsv", "w") as txtfile:
-        txtfile.write(data)
-        txtfile.close()
+            data.append([row['Item']+"-SX",row['Quantity']]) 
+
+    with open("Server/Send/StockFiles/stax.tsv", "w", newline="") as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerows(data)
+
 
     print("finished stax.py")

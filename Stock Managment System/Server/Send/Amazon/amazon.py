@@ -4,7 +4,7 @@ with open("config.yml", 'r') as cfg:
     config = yaml.load(cfg, Loader=yaml.FullLoader)
 
 class AmazonMWS():
-    def format(self, file, prime=False, zero=False):
+    def format(self, file, prime=False):
         data = [["sku","price","minimum-seller-allowed-price","maximum-seller-allowed-price","quantity","leadtime-to-ship"]] # Add header
         lead = config['amazon']['leadShipping']
 
@@ -12,8 +12,6 @@ class AmazonMWS():
         with open(file) as tsvfile:
             reader = csv.reader(tsvfile, delimiter="\t")
             for row in reader:
-                if zero:
-                    row[1] = 0
                 if prime:
                     data.append([row[0]+"-PRIME","","","",row[1]])
                 else:

@@ -1,8 +1,12 @@
 import os, zipfile, csv, re, yaml
 import xml.etree.ElementTree as ET
 
-def decco():
-    print("Starting Decco")
+def decco(zero=False):
+    if zero:
+        print("Zeroing Decco")
+    else:
+        print("Starting Decco")
+
     if os.path.isfile('Server/Receive/Emails/decco.zip'):
         # Load config data
         with open("config.yml", 'r') as cfg:
@@ -71,6 +75,10 @@ def decco():
                     stock = MAX
                 elif stock < MIN:
                     stock = 0
+
+                if zero:
+                    stock = 0
+
                 vallist.append([sku,stock])
 
         # Write to file

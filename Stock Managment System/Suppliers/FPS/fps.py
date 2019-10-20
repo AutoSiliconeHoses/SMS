@@ -18,8 +18,11 @@ def Binary_search(L, target):
 
 
 def fps(zero=False):
-    print("running fps.py")
-
+    if zero:
+        print("Zeroing FPS")
+    else:
+        print("Starting FPS")
+        
     # Create alter list
     alter = []
     with open('Suppliers/alterlist.csv') as altercsv:
@@ -75,7 +78,9 @@ def fps(zero=False):
 
     # Post processing alter
     for fpsline in fullfps:
-        if fpsline[0] in [line[0] for line in alter]:
+        if zero:
+            fpsline[1] = 0
+        elif fpsline[0] in [line[0] for line in alter]:
             fpsline[1] = alter[[line[0] for line in alter].index(fpsline[0])][1]
 
     with open("Server/Send/StockFiles/fps.tsv", "w", newline="") as f:

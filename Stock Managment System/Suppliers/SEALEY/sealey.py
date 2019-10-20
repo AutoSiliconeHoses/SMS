@@ -2,8 +2,12 @@ import openpyxl, os, yaml, csv
 import Server.Receive.supplier_ftp as supplier_ftp
 
 #Download file from FTP
-def sealey():
-    print("running sealey.py")
+def sealey(zero=False):
+    if zero:
+        print("Zeroing Sealey")
+    else:
+        print("Starting Sealey")
+
     supplier_ftp.getFile("sealey")
 
     with open("config.yml", 'r') as cfg:
@@ -39,6 +43,10 @@ def sealey():
             stock = MAX
         elif stock < MIN:
             stock = 0
+
+        if zero:
+            stock = 0
+
         vallist.append([sku,stock])
 
     print("Writing to file")

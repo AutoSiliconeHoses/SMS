@@ -4,17 +4,17 @@ from operator import itemgetter
 
 # Used for finding skus in stockfile
 def Binary_search(L, target):
-	start = 0
-	end = len(L) - 1
-	while start <= end:
-		middle = int((start + end)/ 2)
-		midpoint = L[middle]
-		if midpoint > target:
-			end = middle - 1
-		elif midpoint < target:
-			start = middle + 1
-		else:
-			return middle
+    start = 0
+    end = len(L) - 1
+    while start <= end:
+        middle = int((start + end)/ 2)
+        midpoint = L[middle]
+        if midpoint > target:
+            end = middle - 1
+        elif midpoint < target:
+            start = middle + 1
+        else:
+            return middle
 
 # Used to find text in HTML
 def visible(element):
@@ -28,7 +28,7 @@ with open("config.yml", 'r') as cfg:
     config = yaml.load(cfg, Loader=yaml.FullLoader)
 
 class EbayAPI():
-    def process(self, suppliers, upload=True, zero=False):
+    def process(self, suppliers, upload=True):
         for storecode in config['ebay']: # Loop through enabled stores
             if config['ebay'][storecode]['enabled']:
                 print(storecode.upper())
@@ -79,10 +79,7 @@ class EbayAPI():
                                                     if not checked:
                                                         newdata.append(lastHeader)
                                                         checked = True
-                                                if zero:
-                                                    splitVal = 0
-                                                else:
-                                                    splitVal = int(int(stockSort[found][1])/multiDiv) # Divide stock number by divider and floor
+                                                splitVal = int(int(stockSort[found][1])/multiDiv) # Divide stock number by divider and floor
                                                 splitInts.append(splitVal)
                                                 if splitItem is splitList[-1]: # Check if last value in splitlist. NOTE: Will not append with broken skus, this might be a good thing
                                                     storeLine[2] = min(splitInts)
